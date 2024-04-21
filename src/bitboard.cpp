@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include "bitboard.hpp"
 
 using namespace std;
 

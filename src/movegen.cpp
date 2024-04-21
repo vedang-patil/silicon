@@ -28,7 +28,7 @@ map<pair<long long, long long>, long long> bishopAttacks;
 
 void initRookLookup()
 {
-    for (long long src = 1; src <= (1<<63); src <<= 1)
+    for (long long src = 1; src <= (1ll<<63); src <<= 1)
     {
         long long viewMask = 0;
         long long a = src, b = src, c = src, d = src;
@@ -71,7 +71,7 @@ void initRookLookup()
 
 void initBishopLookup()
 {
-    for (long long src = 1; src <= (1<<63); src <<= 1)
+    for (long long src = 1; src <= (1ll<<63); src <<= 1)
     {
         long long viewMask = 0;
         long long a = src, b = src, c = src, d = src;
@@ -121,15 +121,14 @@ void generateMoves(const Board& board, vector<pair<long long, long long>>& moves
         long long src = popLsb(currentColourBitboard);
         long long targets = 0;
 
-        int offset = board.colour ? 6 : 0;
-        if ((src & board.bitboards[0 + offset]) != 0) targets |= getPawnMovesBitboard(board, src);
-        else if ((src & board.bitboards[1 + offset]) != 0) targets |= getKnightMovesBitboard(board, src);
-        else if ((src & board.bitboards[2 + offset]) != 0) targets |= getBishopMovesBitboard(board, src);
-        else if ((src & board.bitboards[3 + offset]) != 0) targets |= getRookMovesBitboard(board, src);
-        else if ((src & board.bitboards[4 + offset]) != 0) targets |= getQueenMovesBitboard(board, src);
-        else if ((src & board.bitboards[5 + offset]) != 0) targets |= getKingMovesBitboard(board, src);
+        if ((src & board.bitboards[0 + board.colour * 6]) != 0) targets = getPawnMovesBitboard(board, src);
+        else if ((src & board.bitboards[1 + board.colour * 6]) != 0) targets = getKnightMovesBitboard(board, src);
+        else if ((src & board.bitboards[2 + board.colour * 6]) != 0) targets = getBishopMovesBitboard(board, src);
+        else if ((src & board.bitboards[3 + board.colour * 6]) != 0) targets = getRookMovesBitboard(board, src);
+        else if ((src & board.bitboards[4 + board.colour * 6]) != 0) targets = getQueenMovesBitboard(board, src);
+        else if ((src & board.bitboards[5 + board.colour * 6]) != 0) targets = getKingMovesBitboard(board, src);
 
-        while (src != 0) moves.emplace_back(src, popLsb(targets));
+        while (targets != 0) moves.emplace_back(src, popLsb(targets));
     }
 }
 
@@ -161,18 +160,18 @@ long long getKnightMovesBitboard(const Board& board, long long square)
     long long soWeWe = ((~(RANK_1 & A_FILE & B_FILE) & (square)) >> 10);
     long long noWeWe = ((~(RANK_8 & A_FILE & B_FILE) & (square)) << 6);
     long long noNoWe = ((~(RANK_8 & RANK_7 & A_FILE) & (square)) << 15);
-    return (noNoEa | noEaEa | soEaEa | soSoEa | soSoWe | soWeWe | noWeWe | noNoWe) & (!board.getOccupancyBitboard(board.colour));
+    return (noNoEa | noEaEa | soEaEa | soSoEa | soSoWe | soWeWe | noWeWe | noNoWe) & (~board.getOccupancyBitboard(board.colour));
 }
 
 long long getKingMovesBitboard(const Board& board, long long square)
 {
-    long long leftSquare = (square & (~A_FILE));
-    long long rightSquare = (square & (~H_FILE));
+    long long leftSquare = (square & (~A_FILE)) >> 1;
+    long long rightSquare = (square & (~H_FILE)) << 1;
 
     long long up = ((leftSquare | square | rightSquare) << 8);
     long long down = ((leftSquare | square | rightSquare) >> 8);
 
-    return (leftSquare | rightSquare | up | down) & (!board.getOccupancyBitboard(board.colour));
+    return (leftSquare | rightSquare | up | down) & (~board.getOccupancyBitboard(board.colour));
 }
 
 long long getRookMovesBitboard(const Board& board, long long square)
