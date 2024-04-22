@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 #include "board.hpp"
-#include "constants.hpp"
+#include "bitboard.hpp"
 
 using namespace std;
 
@@ -20,15 +20,16 @@ Board::Board(const string &fenString)
     stringstream ss(fenString);
     ss >> piecePlacement >> sideToMove >> castlingRights >> enPassantTargetSquare >> halfmoveClock >> fullmoveCounter;
 
-    this->colour = (sideToMove == 'b');
-    this->castlingRights |= (castlingRights.find('K') == string::npos ? 0 : 1);
-    this->castlingRights |= (castlingRights.find('Q') == string::npos ? 0 : 2);
-    this->castlingRights |= (castlingRights.find('k') == string::npos ? 0 : 4);
-    this->castlingRights |= (castlingRights.find('q') == string::npos ? 0 : 8);
-    this->enPassantTargetSquare = (enPassantTargetSquare == "-" ? -1 : (enPassantTargetSquare[1] - 1) * 8 + (enPassantTargetSquare[0] - 'a'));
-    this->halfmoveClock = halfmoveClock;
-    this->fullmoveCounter = fullmoveCounter;
-    fill(this->bitboards, this->bitboards + 12, 0);
+    currentState.colour = (sideToMove == 'b');
+    currentState.castlingRights = 0;
+    currentState.castlingRights |= (castlingRights.find('K') == string::npos ? 0 : 1);
+    currentState.castlingRights |= (castlingRights.find('Q') == string::npos ? 0 : 2);
+    currentState.castlingRights |= (castlingRights.find('k') == string::npos ? 0 : 4);
+    currentState.castlingRights |= (castlingRights.find('q') == string::npos ? 0 : 8);
+    currentState.enPassantTargetSquare = (enPassantTargetSquare == "-" ? 0 : (enPassantTargetSquare[1] - 1) * 8 + (enPassantTargetSquare[0] - 'a'));
+    currentState.halfmoveClock = halfmoveClock;
+    currentState.fullmoveCounter = fullmoveCounter;
+    fill(currentState.bitboards, currentState.bitboards + 12, 0);
 
     int rank = 7, file = 0;
     for (const char& c: piecePlacement)
@@ -41,7 +42,17 @@ Board::Board(const string &fenString)
         }
         else
         {
-            bitboards[pieceToIndex[c]] |= (1ll << (rank * 8 + file));
+            int pieceIndex;
+            if (toupper(c) == 'P') pieceIndex = 0;
+            else if (toupper(c) == 'N') pieceIndex = 1;
+            else if (toupper(c) == 'B') pieceIndex = 2;
+            else if (toupper(c) == 'R') pieceIndex = 3;
+            else if (toupper(c) == 'Q') pieceIndex = 4;
+            else if (toupper(c) == 'K') pieceIndex = 5;
+
+            if (tolower(c) == c) pieceIndex += 6;
+
+            currentState.bitboards[pieceIndex] |= (1ll << (rank * 8 + file));
             file++;
         }
 
@@ -52,43 +63,35 @@ Board::Board(const string &fenString)
 
 string Board::getAsFenString() const
 {
-    char pieces[64] = {};
-
-    for (int i = 0; i < 64; i++)
-    {
-        if (((1ll << i) & this->bitboards[0]) != 0) pieces[i] = 'P';
-        else if (((1ll << i) & this->bitboards[1]) != 0) pieces[i] = 'N';
-        else if (((1ll << i) & this->bitboards[2]) != 0) pieces[i] = 'B';
-        else if (((1ll << i) & this->bitboards[3]) != 0) pieces[i] = 'R';
-        else if (((1ll << i) & this->bitboards[4]) != 0) pieces[i] = 'Q';
-        else if (((1ll << i) & this->bitboards[5]) != 0) pieces[i] = 'K';
-        else if (((1ll << i) & this->bitboards[6]) != 0) pieces[i] = 'p';
-        else if (((1ll << i) & this->bitboards[7]) != 0) pieces[i] = 'n';
-        else if (((1ll << i) & this->bitboards[8]) != 0) pieces[i] = 'b';
-        else if (((1ll << i) & this->bitboards[9]) != 0) pieces[i] = 'r';
-        else if (((1ll << i) & this->bitboards[10]) != 0) pieces[i] = 'q';
-        else if (((1ll << i) & this->bitboards[11]) != 0) pieces[i] = 'k';
-    }
-
     stringstream result;
     int rank = 7, file = 0;
     int emptyCount = 0;
     for (int i = 0; i < 64; i++)
     {
-        if (pieces[rank * 8 + file] == 0) emptyCount++;
+        char piece = 0;
+
+        if (((1ll << (rank * 8 + file)) & currentState.bitboards[0]) != 0) piece = 'P';
+        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[1]) != 0) piece = 'N';
+        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[2]) != 0) piece = 'B';
+        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[3]) != 0) piece = 'R';
+        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[4]) != 0) piece = 'Q';
+        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[5]) != 0) piece = 'K';
+        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[6]) != 0) piece = 'p';
+        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[7]) != 0) piece = 'n';
+        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[8]) != 0) piece = 'b';
+        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[9]) != 0) piece = 'r';
+        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[10]) != 0) piece = 'q';
+        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[11]) != 0) piece = 'k';
+
+        if (piece == 0) emptyCount++;
+        else if (emptyCount == 0) result << piece;
         else
         {
-            if (emptyCount > 0)
-            {
-                result << emptyCount;
-                emptyCount = 0;
-            }
-
-            result << pieces[rank * 8 + file];
+            result << emptyCount << piece;
+            emptyCount = 0;
         }
 
-        file++;
-        if (file == 8)
+        if (++file == 8)
         {
             if (emptyCount > 0)
             {
@@ -103,69 +106,57 @@ string Board::getAsFenString() const
         file %= 8;
     }
 
-    result << ' ';
+    result << (currentState.colour ? " b " : " w ");
 
-    if (this->colour) result << 'b';
-    else result << 'w';
+    if (1 & currentState.castlingRights) result << "K";
+    if (2 & currentState.castlingRights) result << "Q";
+    if (4 & currentState.castlingRights) result << "k";
+    if (8 & currentState.castlingRights) result << "q";
 
-    result << ' ';
+    int enPassantSquareIdx = lsbIdx(currentState.enPassantTargetSquare) - 1;
+    if (enPassantSquareIdx != -1) result << " " << ('a' + enPassantSquareIdx % 8) << (1 + enPassantSquareIdx / 8);
+    else result << " -";
 
-    if (1 & this->castlingRights) result << 'K';
-    if (2 & this->castlingRights) result << 'Q';
-    if (4 & this->castlingRights) result << 'k';
-    if (8 & this->castlingRights) result << 'q';
-
-    result << ' ';
-
-    if (this->enPassantTargetSquare == -1) result << '-';
-    else result << "-";
-
-    result << ' ' << halfmoveClock << ' ' << fullmoveCounter;
+    result << ' ' << currentState.halfmoveClock << ' ' << currentState.fullmoveCounter;
     return result.str();
 }
 
 long long Board::getOccupancyBitboard() const
 {
-    return bitboards[6] | bitboards[7] | bitboards[8] | bitboards[9] | bitboards[10] | bitboards[11] | 
-    bitboards[0] | bitboards[1] | bitboards[2] | bitboards[3] | bitboards[4] | bitboards[5];
+    long long result = 0;
+    for (int i = 0; i < 12; i++) result |= currentState.bitboards[i];
+    return result;
 }
 
 long long Board::getOccupancyBitboard(bool colour) const
 {
-    if (colour) return bitboards[6] | bitboards[7] | bitboards[8] | bitboards[9] | bitboards[10] | bitboards[11];
-    else return bitboards[0] | bitboards[1] | bitboards[2] | bitboards[3] | bitboards[4] | bitboards[5];
+    long long result = 0;
+    if (!colour) for (int i = 0; i < 6; i++) result |= currentState.bitboards[i];
+    else for (int i = 6; i < 12; i++) result |= currentState.bitboards[i];
+    return result;
 }
 
 void Board::makeMove(pair<long long, long long>& move)
 {
+    prevStates.push_back(currentState);
+
     for (int i = 0; i < 12; i++)
     {
-        if ((bitboards[i] & move.first) != 0)
+        if ((currentState.bitboards[i] & move.first) != 0)
         {
-            this->bitboards[i] = this->bitboards[i] & (~move.first);
-            this->bitboards[i] = this->bitboards[i] | move.second;
+            currentState.bitboards[i] = currentState.bitboards[i] & (~move.first);
+            currentState.bitboards[i] = currentState.bitboards[i] | move.second;
             break;
         }
     }
 
-    fullmoveCounter += this->colour;
-    this->colour = !(this->colour);
-    this->halfmoveClock++;
+    currentState.fullmoveCounter += currentState.colour;
+    currentState.colour = !(currentState.colour);
+    currentState.halfmoveClock++;
 }
 
-void Board::unmakeMove(pair<long long, long long>& move)
+void Board::undoMove()
 {
-    for (int i = 0; i < 12; i++)
-    {
-        if ((bitboards[i] & move.second) != 0)
-        {
-            this->bitboards[i] = this->bitboards[i] & (~move.second);
-            this->bitboards[i] = this->bitboards[i] | move.first;
-            break;
-        }
-    }
-
-    fullmoveCounter += this->colour;
-    this->colour = !(this->colour);
-    this->halfmoveClock++;
+    currentState = prevStates[prevStates.size() - 1];
+    prevStates.pop_back();
 }

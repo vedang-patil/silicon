@@ -114,19 +114,19 @@ void initBishopLookup()
 
 void generateMoves(const Board& board, vector<pair<long long, long long>>& moves)
 {
-    long long currentColourBitboard = board.getOccupancyBitboard(board.colour);
+    long long currentColourBitboard = board.getOccupancyBitboard(board.currentState.colour);
 
     while (currentColourBitboard != 0)
     {
         long long src = popLsb(currentColourBitboard);
         long long targets = 0;
 
-        if ((src & board.bitboards[0 + board.colour * 6]) != 0) targets = getPawnMovesBitboard(board, src);
-        else if ((src & board.bitboards[1 + board.colour * 6]) != 0) targets = getKnightMovesBitboard(board, src);
-        else if ((src & board.bitboards[2 + board.colour * 6]) != 0) targets = getBishopMovesBitboard(board, src);
-        else if ((src & board.bitboards[3 + board.colour * 6]) != 0) targets = getRookMovesBitboard(board, src);
-        else if ((src & board.bitboards[4 + board.colour * 6]) != 0) targets = getQueenMovesBitboard(board, src);
-        else if ((src & board.bitboards[5 + board.colour * 6]) != 0) targets = getKingMovesBitboard(board, src);
+        if ((src & board.currentState.bitboards[0 + board.currentState.colour * 6]) != 0) targets = getPawnMovesBitboard(board, src);
+        else if ((src & board.currentState.bitboards[1 + board.currentState.colour * 6]) != 0) targets = getKnightMovesBitboard(board, src);
+        else if ((src & board.currentState.bitboards[2 + board.currentState.colour * 6]) != 0) targets = getBishopMovesBitboard(board, src);
+        else if ((src & board.currentState.bitboards[3 + board.currentState.colour * 6]) != 0) targets = getRookMovesBitboard(board, src);
+        else if ((src & board.currentState.bitboards[4 + board.currentState.colour * 6]) != 0) targets = getQueenMovesBitboard(board, src);
+        else if ((src & board.currentState.bitboards[5 + board.currentState.colour * 6]) != 0) targets = getKingMovesBitboard(board, src);
 
         while (targets != 0) moves.emplace_back(src, popLsb(targets));
     }
@@ -134,19 +134,31 @@ void generateMoves(const Board& board, vector<pair<long long, long long>>& moves
 
 long long getPawnMovesBitboard(const Board& board, long long square)
 {
-    if (board.colour == 0)
+    if (board.currentState.colour == 0)
     {
         long long push = (square << 8) & (~board.getOccupancyBitboard());
-        long long leftDiagCapture = ((square & (~A_FILE)) << 7) & board.getOccupancyBitboard(!board.colour);
-        long long rightDiagCapture = ((square & (~H_FILE)) << 9) & board.getOccupancyBitboard(!board.colour);
-        return push | leftDiagCapture | rightDiagCapture;
+        long long doublePush = (push << 8) & (~board.getOccupancyBitboard()) & RANK_4;
+        long long leftDiagCapture = ((square & (~A_FILE)) << 7) & board.getOccupancyBitboard(!board.currentState.colour);
+        long long rightDiagCapture = ((square & (~H_FILE)) << 9) & board.getOccupancyBitboard(!board.currentState.colour);
+
+        bool canEnPassantCapture = ((board.currentState.enPassantTargetSquare & (~A_FILE)) << 1) == square;
+        canEnPassantCapture |= ((board.currentState.enPassantTargetSquare & (~H_FILE)) >> 1) == square;
+        long long enPassantCapture = (canEnPassantCapture ? (board.currentState.enPassantTargetSquare << 8) : 0);
+
+        return push | doublePush | leftDiagCapture | rightDiagCapture | enPassantCapture;
     }
     else
     {
         long long push = (square >> 8) & (~board.getOccupancyBitboard());
-        long long leftDiagCapture = ((square & (~A_FILE)) >> 9) & board.getOccupancyBitboard(!board.colour);
-        long long rightDiagCapture = ((square & (~H_FILE)) >> 7) & board.getOccupancyBitboard(!board.colour);
-        return push | leftDiagCapture | rightDiagCapture;
+        long long doublePush = (push >> 8) & (~board.getOccupancyBitboard()) & RANK_5;
+        long long leftDiagCapture = ((square & (~A_FILE)) >> 9) & board.getOccupancyBitboard(!board.currentState.colour);
+        long long rightDiagCapture = ((square & (~H_FILE)) >> 7) & board.getOccupancyBitboard(!board.currentState.colour);
+
+        bool canEnPassantCapture = ((board.currentState.enPassantTargetSquare & (~A_FILE)) << 1) == square;
+        canEnPassantCapture |= ((board.currentState.enPassantTargetSquare & (~H_FILE)) >> 1) == square;
+        long long enPassantCapture = (canEnPassantCapture ? (board.currentState.enPassantTargetSquare >> 8) : 0);
+
+        return push | doublePush | leftDiagCapture | rightDiagCapture | enPassantCapture;
     }
 }
 
@@ -160,7 +172,7 @@ long long getKnightMovesBitboard(const Board& board, long long square)
     long long soWeWe = ((~(RANK_1 & A_FILE & B_FILE) & (square)) >> 10);
     long long noWeWe = ((~(RANK_8 & A_FILE & B_FILE) & (square)) << 6);
     long long noNoWe = ((~(RANK_8 & RANK_7 & A_FILE) & (square)) << 15);
-    return (noNoEa | noEaEa | soEaEa | soSoEa | soSoWe | soWeWe | noWeWe | noNoWe) & (~board.getOccupancyBitboard(board.colour));
+    return (noNoEa | noEaEa | soEaEa | soSoEa | soSoWe | soWeWe | noWeWe | noNoWe) & (~board.getOccupancyBitboard(board.currentState.colour));
 }
 
 long long getKingMovesBitboard(const Board& board, long long square)
@@ -171,19 +183,19 @@ long long getKingMovesBitboard(const Board& board, long long square)
     long long up = ((leftSquare | square | rightSquare) << 8);
     long long down = ((leftSquare | square | rightSquare) >> 8);
 
-    return (leftSquare | rightSquare | up | down) & (~board.getOccupancyBitboard(board.colour));
+    return (leftSquare | rightSquare | up | down) & (~board.getOccupancyBitboard(board.currentState.colour));
 }
 
 long long getRookMovesBitboard(const Board& board, long long square)
 {
     long long relevantOccupancyBitboard = rookAttacks[{square, 0}] & board.getOccupancyBitboard();
-    return rookAttacks[{square, relevantOccupancyBitboard}] & (~board.getOccupancyBitboard(board.colour));
+    return rookAttacks[{square, relevantOccupancyBitboard}] & (~board.getOccupancyBitboard(board.currentState.colour));
 }
 
 long long getBishopMovesBitboard(const Board& board, long long square)
 {
     long long relevantOccupancyBitboard = bishopAttacks[{square, 0}] & board.getOccupancyBitboard();
-    return bishopAttacks[{square, relevantOccupancyBitboard}] & (~board.getOccupancyBitboard(board.colour));
+    return bishopAttacks[{square, relevantOccupancyBitboard}] & (~board.getOccupancyBitboard(board.currentState.colour));
 }
 
 long long getQueenMovesBitboard(const Board& board, long long square)

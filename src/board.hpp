@@ -3,16 +3,21 @@
 
 using namespace std;
 
-class Board
+struct BoardState
 {
-public:
     long long bitboards[12];
-
     bool colour;
-    int enPassantTargetSquare;
+    long long enPassantTargetSquare;
     int castlingRights;
     int halfmoveClock;
     int fullmoveCounter;
+};
+
+class Board
+{
+public:
+    vector<BoardState> prevStates;
+    BoardState currentState;
 
     Board();
     Board(const string &fenString);
@@ -25,5 +30,5 @@ public:
 
     void makeMove(pair<long long, long long>& move);
     
-    void unmakeMove(pair<long long, long long>& move);
+    void undoMove();
 };

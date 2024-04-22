@@ -8,4 +8,6 @@ long long popLsb(long long& x);
 
 int popCount(long long x);
 
+int lsbIdx(long long x);
+
 void getSubsets(long long x, vector<long long>& result);

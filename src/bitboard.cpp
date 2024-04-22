@@ -28,6 +28,11 @@ int popCount(long long x)
     return result;
 }
 
+int lsbIdx(long long x)
+{
+    return popCount(lsb(x));
+}
+
 void getSubsets(long long x, vector<long long>& result)
 {
     for (long long i = 0; i < (1<<popCount(x)); i++)
