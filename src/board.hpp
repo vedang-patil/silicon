@@ -1,13 +1,15 @@
 #pragma once
 #include <bits/stdc++.h>
 
+typedef unsigned long long U64;
+
 using namespace std;
 
 struct BoardState
 {
-    long long bitboards[12];
+    U64 bitboards[12];
     bool colour;
-    long long enPassantTargetSquare;
+    U64 enPassantTargetSquare;
     int castlingRights;
     int halfmoveClock;
     int fullmoveCounter;
@@ -24,11 +26,11 @@ public:
 
     string getAsFenString() const;
 
-    long long getOccupancyBitboard() const;
+    U64 getOccupancyBitboard() const;
     
-    long long getOccupancyBitboard(bool colour) const;
+    U64 getOccupancyBitboard(bool colour) const;
 
-    void makeMove(pair<long long, long long>& move);
+    void makeMove(pair<U64, U64>& move);
     
     void undoMove();
 };

@@ -2,22 +2,24 @@
 #include <bits/stdc++.h>
 #include "board.hpp"
 
+typedef unsigned long long U64; 
+
 using namespace std;
 
 void initRookLookup();
 
 void initBishopLookup();
 
-void generateMoves(const Board& board, vector<pair<long long, long long>>& moves);
+void generateMoves(const Board& board, vector<pair<U64, U64>>& moves);
 
-long long getPawnMovesBitboard(const Board& board, long long square);
+U64 getPawnMovesBitboard(const Board& board, U64 square);
 
-long long getKnightMovesBitboard(const Board& board, long long square);
+U64 getKnightMovesBitboard(const Board& board, U64 square);
 
-long long getKingMovesBitboard(const Board& board, long long square);
+U64 getKingMovesBitboard(const Board& board, U64 square);
 
-long long getRookMovesBitboard(const Board& board, long long square);
+U64 getRookMovesBitboard(const Board& board, U64 square);
 
-long long getBishopMovesBitboard(const Board& board, long long square);
+U64 getBishopMovesBitboard(const Board& board, U64 square);
 
-long long getQueenMovesBitboard(const Board& board, long long square);
+U64 getQueenMovesBitboard(const Board& board, U64 square);

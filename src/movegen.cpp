@@ -3,65 +3,42 @@
 #include "board.hpp"
 #include "bitboard.hpp"
 
+typedef unsigned long long U64;
+
 using namespace std;
 
-#define A_FILE (72340172838076673ll)
-#define B_FILE (144680345676153346ll)
-#define C_FILE (289360691352306692ll)
-#define D_FILE (578721382704613384ll)
-#define E_FILE (1157442765409226768ll)
-#define F_FILE (2314885530818453536ll)
-#define G_FILE (4629771061636907072ll)
-#define H_FILE (-9187201950435737472ll)
-
-#define RANK_1 (255ll)
-#define RANK_2 (65280ll)
-#define RANK_3 (16711680ll)
-#define RANK_4 (4278190080ll)
-#define RANK_5 (1095216660480ll)
-#define RANK_6 (280375465082880ll)
-#define RANK_7 (71776119061217280ll)
-#define RANK_8 (-72057594037927936ll)
-
-map<pair<long long, long long>, long long> rookAttacks;
-map<pair<long long, long long>, long long> bishopAttacks;
+map<pair<U64, U64>, U64> rookAttacks;
+map<pair<U64, U64>, U64> bishopAttacks;
 
 void initRookLookup()
 {
-    for (long long src = 1; src <= (1ll<<63); src <<= 1)
+    for (U64 src = 1; src != 0; src <<= 1)
     {
-        long long viewMask = 0;
-        long long a = src, b = src, c = src, d = src;
-
+        U64 north = src, south = src, east = src, west = src;
         for (int i = 0; i < 7; i++)
         {
-            a = a >> 8;
-            b = b << 8;
-            c = (c & (~H_FILE)) >> 1;
-            d = (d & (~A_FILE)) << 1;
-            viewMask |= (a | b | c | d);
+            north |= north << 8;
+            south |= south >> 8;
+            east |= (east & (~H_FILE)) << 1;
+            west |= (west & (~A_FILE)) >> 1;
         }
 
-        vector<long long> possibleOccupancies;
-        getSubsets(viewMask, possibleOccupancies);
+        vector<U64> possibleOccupancies;
+        getSubsets((north | south | east | west) & (~src), possibleOccupancies);
 
-        for (long long occupancy: possibleOccupancies)
+        for (U64 occupancy: possibleOccupancies)
         {
-            long long result = 0;
-            long long a = src, b = src, c = src, d = src;
+            U64 a = src, b = src, c = src, d = src;
+            U64 result = 0;
 
             for (int i = 0; i < 7; i++)
             {
-                a = a >> 8;
-                b = b << 8;
-                c = (c & (~H_FILE)) >> 1;
-                d = (d & (~A_FILE)) << 1;
+                a = (a & (~occupancy)) >> 8;
+                b = (b & (~occupancy)) << 8;
+                c = (c & (~H_FILE) & (~occupancy)) << 1;
+                d = (d & (~A_FILE) & (~occupancy)) >> 1;
+
                 result |= (a | b | c | d);
-                long long stopNow = A_FILE | H_FILE | RANK_1 | RANK_8 | occupancy;
-                a &= ~stopNow;
-                b &= ~stopNow;
-                c &= ~stopNow;
-                d &= ~stopNow;
             }
 
             rookAttacks[{src, occupancy}] = result;
@@ -71,40 +48,33 @@ void initRookLookup()
 
 void initBishopLookup()
 {
-    for (long long src = 1; src <= (1ll<<63); src <<= 1)
+    for (U64 src = 1; src != 0; src <<= 1)
     {
-        long long viewMask = 0;
-        long long a = src, b = src, c = src, d = src;
-
+        U64 northEast = src, southEast = src, northWest = src, southWest = src;
         for (int i = 0; i < 7; i++)
         {
-            a = (a & ~(RANK_8 | H_FILE)) >> 9;
-            b = (a & ~(H_FILE | RANK_1)) << 7;
-            c = (c & ~(RANK_1 | A_FILE)) << 9;
-            d = (d & ~(A_FILE | RANK_8)) >> 7;
-            viewMask |= (a | b | c | d);
+            northWest |= (northWest & (~(A_FILE | RANK_8))) << 7;
+            northEast |= (northEast & (~(RANK_8 | H_FILE))) << 9;
+            southEast |= (southEast & (~(H_FILE | RANK_1))) >> 7;
+            southWest |= (southWest & (~(RANK_1 | A_FILE))) >> 9;
         }
 
-        vector<long long> possibleOccupancies;
-        getSubsets(viewMask, possibleOccupancies);
+        vector<U64> possibleOccupancies;
+        getSubsets((northEast | southEast | northWest | southWest) & (~src), possibleOccupancies);
 
-        for (long long occupancy: possibleOccupancies)
+        for (U64 occupancy: possibleOccupancies)
         {
-            long long result = 0;
-            long long a = src, b = src, c = src, d = src;
+            U64 a = src, b = src, c = src, d = src;
+            U64 result = 0;
 
             for (int i = 0; i < 7; i++)
             {
-                a = (a & ~(RANK_8 | H_FILE)) >> 9;
-                b = (a & ~(H_FILE | RANK_1)) << 7;
-                c = (c & ~(RANK_1 | A_FILE)) << 9;
-                d = (d & ~(A_FILE | RANK_8)) >> 7;
+                a = (a & (~(A_FILE | RANK_8)) & (~occupancy)) << 7;
+                b = (b & (~(RANK_8 | H_FILE)) & (~occupancy)) << 9;
+                c = (c & (~(H_FILE | RANK_1)) & (~occupancy)) >> 7;
+                d = (d & (~(RANK_1 | A_FILE)) & (~occupancy)) >> 9;
+
                 result |= (a | b | c | d);
-                long long stopNow = A_FILE | H_FILE | RANK_1 | RANK_8 | occupancy;
-                a &= ~stopNow;
-                b &= ~stopNow;
-                c &= ~stopNow;
-                d &= ~stopNow;
             }
 
             bishopAttacks[{src, occupancy}] = result;
@@ -112,14 +82,14 @@ void initBishopLookup()
     }
 }
 
-void generateMoves(const Board& board, vector<pair<long long, long long>>& moves)
+void generateMoves(const Board& board, vector<pair<U64, U64>>& moves)
 {
-    long long currentColourBitboard = board.getOccupancyBitboard(board.currentState.colour);
+    U64 currentColourBitboard = board.getOccupancyBitboard(board.currentState.colour);
 
     while (currentColourBitboard != 0)
     {
-        long long src = popLsb(currentColourBitboard);
-        long long targets = 0;
+        U64 src = popLsb(currentColourBitboard);
+        U64 targets = 0;
 
         if ((src & board.currentState.bitboards[0 + board.currentState.colour * 6]) != 0) targets = getPawnMovesBitboard(board, src);
         else if ((src & board.currentState.bitboards[1 + board.currentState.colour * 6]) != 0) targets = getKnightMovesBitboard(board, src);
@@ -132,73 +102,71 @@ void generateMoves(const Board& board, vector<pair<long long, long long>>& moves
     }
 }
 
-long long getPawnMovesBitboard(const Board& board, long long square)
+U64 getPawnMovesBitboard(const Board& board, U64 square)
 {
     if (board.currentState.colour == 0)
     {
-        long long push = (square << 8) & (~board.getOccupancyBitboard());
-        long long doublePush = (push << 8) & (~board.getOccupancyBitboard()) & RANK_4;
-        long long leftDiagCapture = ((square & (~A_FILE)) << 7) & board.getOccupancyBitboard(!board.currentState.colour);
-        long long rightDiagCapture = ((square & (~H_FILE)) << 9) & board.getOccupancyBitboard(!board.currentState.colour);
+        U64 push = (square << 8) & (~board.getOccupancyBitboard());
+        U64 doublePush = (push << 8) & (~board.getOccupancyBitboard()) & RANK_4;
+        U64 leftDiagCapture = ((square & (~A_FILE)) << 7) & board.getOccupancyBitboard(!board.currentState.colour);
+        U64 rightDiagCapture = ((square & (~H_FILE)) << 9) & board.getOccupancyBitboard(!board.currentState.colour);
 
         bool canEnPassantCapture = ((board.currentState.enPassantTargetSquare & (~A_FILE)) << 1) == square;
         canEnPassantCapture |= ((board.currentState.enPassantTargetSquare & (~H_FILE)) >> 1) == square;
-        long long enPassantCapture = (canEnPassantCapture ? (board.currentState.enPassantTargetSquare << 8) : 0);
+        U64 enPassantCapture = (canEnPassantCapture ? (board.currentState.enPassantTargetSquare << 8) : 0);
 
         return push | doublePush | leftDiagCapture | rightDiagCapture | enPassantCapture;
     }
     else
     {
-        long long push = (square >> 8) & (~board.getOccupancyBitboard());
-        long long doublePush = (push >> 8) & (~board.getOccupancyBitboard()) & RANK_5;
-        long long leftDiagCapture = ((square & (~A_FILE)) >> 9) & board.getOccupancyBitboard(!board.currentState.colour);
-        long long rightDiagCapture = ((square & (~H_FILE)) >> 7) & board.getOccupancyBitboard(!board.currentState.colour);
+        U64 push = (square >> 8) & (~board.getOccupancyBitboard());
+        U64 doublePush = (push >> 8) & (~board.getOccupancyBitboard()) & RANK_5;
+        U64 leftDiagCapture = ((square & (~A_FILE)) >> 9) & board.getOccupancyBitboard(!board.currentState.colour);
+        U64 rightDiagCapture = ((square & (~H_FILE)) >> 7) & board.getOccupancyBitboard(!board.currentState.colour);
 
         bool canEnPassantCapture = ((board.currentState.enPassantTargetSquare & (~A_FILE)) << 1) == square;
         canEnPassantCapture |= ((board.currentState.enPassantTargetSquare & (~H_FILE)) >> 1) == square;
-        long long enPassantCapture = (canEnPassantCapture ? (board.currentState.enPassantTargetSquare >> 8) : 0);
+        U64 enPassantCapture = (canEnPassantCapture ? (board.currentState.enPassantTargetSquare >> 8) : 0);
 
         return push | doublePush | leftDiagCapture | rightDiagCapture | enPassantCapture;
     }
 }
 
-long long getKnightMovesBitboard(const Board& board, long long square)
+U64 getKnightMovesBitboard(const Board& board, U64 square)
 {
-    long long noNoEa = ((~(RANK_7 & RANK_8 & H_FILE) & (square)) << 17);
-    long long noEaEa = ((~(RANK_8 & G_FILE & H_FILE) & (square)) << 10);
-    long long soEaEa = ((~(RANK_1 & G_FILE & H_FILE) & (square)) >> 6);
-    long long soSoEa = ((~(RANK_1 & RANK_2 & H_FILE) & (square)) >> 15);
-    long long soSoWe = ((~(RANK_1 & RANK_2 & A_FILE) & (square)) >> 17);
-    long long soWeWe = ((~(RANK_1 & A_FILE & B_FILE) & (square)) >> 10);
-    long long noWeWe = ((~(RANK_8 & A_FILE & B_FILE) & (square)) << 6);
-    long long noNoWe = ((~(RANK_8 & RANK_7 & A_FILE) & (square)) << 15);
+    U64 noNoEa = ((~(RANK_7 & RANK_8 & H_FILE) & (square)) << 17);
+    U64 noEaEa = ((~(RANK_8 & G_FILE & H_FILE) & (square)) << 10);
+    U64 soEaEa = ((~(RANK_1 & G_FILE & H_FILE) & (square)) >> 6);
+    U64 soSoEa = ((~(RANK_1 & RANK_2 & H_FILE) & (square)) >> 15);
+    U64 soSoWe = ((~(RANK_1 & RANK_2 & A_FILE) & (square)) >> 17);
+    U64 soWeWe = ((~(RANK_1 & A_FILE & B_FILE) & (square)) >> 10);
+    U64 noWeWe = ((~(RANK_8 & A_FILE & B_FILE) & (square)) << 6);
+    U64 noNoWe = ((~(RANK_8 & RANK_7 & A_FILE) & (square)) << 15);
     return (noNoEa | noEaEa | soEaEa | soSoEa | soSoWe | soWeWe | noWeWe | noNoWe) & (~board.getOccupancyBitboard(board.currentState.colour));
 }
 
-long long getKingMovesBitboard(const Board& board, long long square)
+U64 getKingMovesBitboard(const Board& board, U64 square)
 {
-    long long leftSquare = (square & (~A_FILE)) >> 1;
-    long long rightSquare = (square & (~H_FILE)) << 1;
+    U64 leftSquare = (square & (~A_FILE)) >> 1;
+    U64 rightSquare = (square & (~H_FILE)) << 1;
 
-    long long up = ((leftSquare | square | rightSquare) << 8);
-    long long down = ((leftSquare | square | rightSquare) >> 8);
+    U64 up = ((leftSquare | square | rightSquare) << 8);
+    U64 down = ((leftSquare | square | rightSquare) >> 8);
 
     return (leftSquare | rightSquare | up | down) & (~board.getOccupancyBitboard(board.currentState.colour));
 }
 
-long long getRookMovesBitboard(const Board& board, long long square)
+U64 getRookMovesBitboard(const Board& board, U64 square)
 {
-    long long relevantOccupancyBitboard = rookAttacks[{square, 0}] & board.getOccupancyBitboard();
-    return rookAttacks[{square, relevantOccupancyBitboard}] & (~board.getOccupancyBitboard(board.currentState.colour));
+    return rookAttacks[{square, rookAttacks[{square, 0}] & board.getOccupancyBitboard()}] & (~board.getOccupancyBitboard(board.currentState.colour));
 }
 
-long long getBishopMovesBitboard(const Board& board, long long square)
+U64 getBishopMovesBitboard(const Board& board, U64 square)
 {
-    long long relevantOccupancyBitboard = bishopAttacks[{square, 0}] & board.getOccupancyBitboard();
-    return bishopAttacks[{square, relevantOccupancyBitboard}] & (~board.getOccupancyBitboard(board.currentState.colour));
+    return bishopAttacks[{square, bishopAttacks[{square, 0}] & board.getOccupancyBitboard()}] & (~board.getOccupancyBitboard(board.currentState.colour));
 }
 
-long long getQueenMovesBitboard(const Board& board, long long square)
+U64 getQueenMovesBitboard(const Board& board, U64 square)
 {
     return getRookMovesBitboard(board, square) | getBishopMovesBitboard(board, square);
 }

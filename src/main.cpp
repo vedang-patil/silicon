@@ -3,6 +3,8 @@
 #include "movegen.hpp"
 #include "board.hpp"
 
+typedef unsigned long long U64;
+
 using namespace std;
 
 int main()
@@ -10,23 +12,12 @@ int main()
     initRookLookup();
     initBishopLookup();
 
-    Board board;
-    vector<pair<long long, long long>> moves;
-    generateMoves(board, moves);
+    UCI uci(cout);
+    string command = "";
 
-    for (pair<long long, long long>& move: moves)
+    while (command != "quit")
     {
-        board.makeMove(move);
-        cout << board.getAsFenString() << endl;
-        board.undoMove();
+        cin >> command;
+        uci.handleCommand(command);
     }
-
-    // UCI uci(cout);
-    // string command = "";
-
-    // while (command != "quit")
-    // {
-    //     cin >> command;
-    //     uci.handleCommand(command);
-    // }
 }

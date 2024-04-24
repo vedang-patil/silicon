@@ -1,21 +1,23 @@
 #include <bits/stdc++.h>
 #include "bitboard.hpp"
 
+typedef unsigned long long U64;
+
 using namespace std;
 
-long long lsb(long long x)
+U64 lsb(U64 x)
 {
-    return x & (-x);
+    return x & (0-x);
 }
 
-long long popLsb(long long& x)
+U64 popLsb(U64& x)
 {
-    long long y = lsb(x);
+    U64 y = lsb(x);
     x &= (~y);
     return y;
 }
 
-int popCount(long long x)
+int popCount(U64 x)
 {
     int result = 0;
 
@@ -28,17 +30,17 @@ int popCount(long long x)
     return result;
 }
 
-int lsbIdx(long long x)
+int lsbIdx(U64 x)
 {
     return popCount(lsb(x));
 }
 
-void getSubsets(long long x, vector<long long>& result)
+void getSubsets(U64 x, vector<U64>& result)
 {
-    for (long long i = 0; i < (1<<popCount(x)); i++)
+    for (U64 i = 0; i < (1ull<<popCount(x)); i++)
     {
-        long long tempX = x;
-        long long current = 0;
+        U64 tempX = x;
+        U64 current = 0;
         int j = 0;
 
         while (tempX != 0)

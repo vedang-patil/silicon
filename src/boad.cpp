@@ -2,6 +2,8 @@
 #include "board.hpp"
 #include "bitboard.hpp"
 
+typedef unsigned long long U64;
+
 using namespace std;
 
 Board::Board()
@@ -52,7 +54,7 @@ Board::Board(const string &fenString)
 
             if (tolower(c) == c) pieceIndex += 6;
 
-            currentState.bitboards[pieceIndex] |= (1ll << (rank * 8 + file));
+            currentState.bitboards[pieceIndex] |= (1ull << (rank * 8 + file));
             file++;
         }
 
@@ -70,18 +72,18 @@ string Board::getAsFenString() const
     {
         char piece = 0;
 
-        if (((1ll << (rank * 8 + file)) & currentState.bitboards[0]) != 0) piece = 'P';
-        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[1]) != 0) piece = 'N';
-        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[2]) != 0) piece = 'B';
-        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[3]) != 0) piece = 'R';
-        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[4]) != 0) piece = 'Q';
-        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[5]) != 0) piece = 'K';
-        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[6]) != 0) piece = 'p';
-        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[7]) != 0) piece = 'n';
-        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[8]) != 0) piece = 'b';
-        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[9]) != 0) piece = 'r';
-        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[10]) != 0) piece = 'q';
-        else if (((1ll << (rank * 8 + file)) & currentState.bitboards[11]) != 0) piece = 'k';
+        if (((1ull << (rank * 8 + file)) & currentState.bitboards[0]) != 0) piece = 'P';
+        else if (((1ull << (rank * 8 + file)) & currentState.bitboards[1]) != 0) piece = 'N';
+        else if (((1ull << (rank * 8 + file)) & currentState.bitboards[2]) != 0) piece = 'B';
+        else if (((1ull << (rank * 8 + file)) & currentState.bitboards[3]) != 0) piece = 'R';
+        else if (((1ull << (rank * 8 + file)) & currentState.bitboards[4]) != 0) piece = 'Q';
+        else if (((1ull << (rank * 8 + file)) & currentState.bitboards[5]) != 0) piece = 'K';
+        else if (((1ull << (rank * 8 + file)) & currentState.bitboards[6]) != 0) piece = 'p';
+        else if (((1ull << (rank * 8 + file)) & currentState.bitboards[7]) != 0) piece = 'n';
+        else if (((1ull << (rank * 8 + file)) & currentState.bitboards[8]) != 0) piece = 'b';
+        else if (((1ull << (rank * 8 + file)) & currentState.bitboards[9]) != 0) piece = 'r';
+        else if (((1ull << (rank * 8 + file)) & currentState.bitboards[10]) != 0) piece = 'q';
+        else if (((1ull << (rank * 8 + file)) & currentState.bitboards[11]) != 0) piece = 'k';
 
         if (piece == 0) emptyCount++;
         else if (emptyCount == 0) result << piece;
@@ -112,6 +114,7 @@ string Board::getAsFenString() const
     if (2 & currentState.castlingRights) result << "Q";
     if (4 & currentState.castlingRights) result << "k";
     if (8 & currentState.castlingRights) result << "q";
+    if ((15 & currentState.castlingRights) == 0) result << "-";
 
     int enPassantSquareIdx = lsbIdx(currentState.enPassantTargetSquare) - 1;
     if (enPassantSquareIdx != -1) result << " " << ('a' + enPassantSquareIdx % 8) << (1 + enPassantSquareIdx / 8);
@@ -121,22 +124,22 @@ string Board::getAsFenString() const
     return result.str();
 }
 
-long long Board::getOccupancyBitboard() const
+U64 Board::getOccupancyBitboard() const
 {
-    long long result = 0;
+    U64 result = 0;
     for (int i = 0; i < 12; i++) result |= currentState.bitboards[i];
     return result;
 }
 
-long long Board::getOccupancyBitboard(bool colour) const
+U64 Board::getOccupancyBitboard(bool colour) const
 {
-    long long result = 0;
+    U64 result = 0;
     if (!colour) for (int i = 0; i < 6; i++) result |= currentState.bitboards[i];
     else for (int i = 6; i < 12; i++) result |= currentState.bitboards[i];
     return result;
 }
 
-void Board::makeMove(pair<long long, long long>& move)
+void Board::makeMove(pair<U64, U64>& move)
 {
     prevStates.push_back(currentState);
 
