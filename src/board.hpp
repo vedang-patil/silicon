@@ -30,7 +30,9 @@ public:
     
     U64 getOccupancyBitboard(bool colour) const;
 
-    void makeMove(pair<U64, U64>& move);
+    void makeMove(const string& move);
+
+    void makeMove(const pair<U64, U64>& move);
     
     void undoMove();
 };

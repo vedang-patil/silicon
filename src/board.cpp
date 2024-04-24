@@ -139,7 +139,14 @@ U64 Board::getOccupancyBitboard(bool colour) const
     return result;
 }
 
-void Board::makeMove(pair<U64, U64>& move)
+void Board::makeMove(const string& move)
+{
+    int fromIndex = (move[1] - '1') * 8 + (move[0] - 'a');
+    int toIndex = (move[3] - '1') * 8 + (move[2] - 'a');
+    this->makeMove(make_pair(1ull<<fromIndex, 1ull<<toIndex));
+}
+
+void Board::makeMove(const pair<U64, U64>& move)
 {
     prevStates.push_back(currentState);
 

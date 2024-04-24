@@ -1,5 +1,6 @@
 #pragma once
 #include <bits/stdc++.h>
+#include "board.hpp"
 
 typedef unsigned long long U64;
 
@@ -9,6 +10,7 @@ class UCI
 {
 private:
     ostream& outputStream;
+    Board board;
 public:
     UCI(ostream& outputStream);
 
@@ -25,4 +27,6 @@ public:
     void go(const vector<string>& tokens);
 
     void stop();
+
+    void display();
 };

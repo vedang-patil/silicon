@@ -17,7 +17,7 @@ int main()
 
     while (command != "quit")
     {
-        cin >> command;
+        getline(cin, command);
         uci.handleCommand(command);
     }
 }

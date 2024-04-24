@@ -14,17 +14,20 @@ void initRookLookup()
 {
     for (U64 src = 1; src != 0; src <<= 1)
     {
+        U64 unblockedOccupancy = 0;
         U64 north = src, south = src, east = src, west = src;
+
         for (int i = 0; i < 7; i++)
         {
-            north |= north << 8;
-            south |= south >> 8;
-            east |= (east & (~H_FILE)) << 1;
-            west |= (west & (~A_FILE)) >> 1;
+            north = (north & ~RANK_7) << 8;
+            south = (south & ~RANK_2) >> 8;
+            east = (east & ~H_FILE & ~G_FILE) << 1;
+            west = (west & ~A_FILE & ~B_FILE) >> 1;
+            unblockedOccupancy |= (north | south | east | west);
         }
 
         vector<U64> possibleOccupancies;
-        getSubsets((north | south | east | west) & (~src), possibleOccupancies);
+        getSubsets(unblockedOccupancy, possibleOccupancies);
 
         for (U64 occupancy: possibleOccupancies)
         {
@@ -50,17 +53,19 @@ void initBishopLookup()
 {
     for (U64 src = 1; src != 0; src <<= 1)
     {
+        U64 unblockedOccupancy = 0;
         U64 northEast = src, southEast = src, northWest = src, southWest = src;
         for (int i = 0; i < 7; i++)
         {
-            northWest |= (northWest & (~(A_FILE | RANK_8))) << 7;
-            northEast |= (northEast & (~(RANK_8 | H_FILE))) << 9;
-            southEast |= (southEast & (~(H_FILE | RANK_1))) >> 7;
-            southWest |= (southWest & (~(RANK_1 | A_FILE))) >> 9;
+            northWest = (northWest & (~(A_FILE | B_FILE | RANK_8 | RANK_7))) << 7;
+            northEast = (northEast & (~(RANK_8 | RANK_7 | H_FILE | G_FILE))) << 9;
+            southEast = (southEast & (~(H_FILE | G_FILE | RANK_1 | RANK_2))) >> 7;
+            southWest = (southWest & (~(RANK_1 | RANK_2 | A_FILE | B_FILE))) >> 9;
+            unblockedOccupancy |= (northWest | northEast | southEast | southWest);
         }
 
         vector<U64> possibleOccupancies;
-        getSubsets((northEast | southEast | northWest | southWest) & (~src), possibleOccupancies);
+        getSubsets(unblockedOccupancy, possibleOccupancies);
 
         for (U64 occupancy: possibleOccupancies)
         {

@@ -42,6 +42,10 @@ void UCI::handleCommand(const string& command)
     {
         stop();
     }
+    else if (tokens[0] == "display")
+    {
+        display();
+    }
 }
 
 void UCI::uci()
@@ -58,10 +62,13 @@ void UCI::isReady()
 
 void UCI::uciNewGame()
 {
+    Board board;
 }
 
 void UCI::position(const vector<string>& tokens)
 {
+    this->board = ((tokens[1] == "startpos") ? Board() : Board(tokens[3] + tokens[4] + tokens[5] + tokens[6] + tokens[6] + tokens[8]));
+    for (size_t i = (tokens[1] == "startpos") ? 3: 9; i < tokens.size(); i++) board.makeMove(tokens[i]);
 }
 
 void UCI::go(const vector<string>& tokens)
@@ -70,4 +77,9 @@ void UCI::go(const vector<string>& tokens)
 
 void UCI::stop()
 {
+}
+
+void UCI::display()
+{
+    outputStream << board.getAsFenString() << endl;
 }
