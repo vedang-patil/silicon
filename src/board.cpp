@@ -16,11 +16,9 @@ Board::Board(const string &fenString)
     char sideToMove;
     string castlingRights;
     string enPassantTargetSquare;
-    int halfmoveClock;
-    int fullmoveCounter;
 
     stringstream ss(fenString);
-    ss >> piecePlacement >> sideToMove >> castlingRights >> enPassantTargetSquare >> halfmoveClock >> fullmoveCounter;
+    ss >> piecePlacement >> sideToMove >> castlingRights >> enPassantTargetSquare >> currentState.halfmoveClock >> currentState.fullmoveCounter;
 
     currentState.colour = (sideToMove == 'b');
     currentState.castlingRights = 0;
@@ -29,8 +27,6 @@ Board::Board(const string &fenString)
     currentState.castlingRights |= (castlingRights.find('k') == string::npos ? 0 : 4);
     currentState.castlingRights |= (castlingRights.find('q') == string::npos ? 0 : 8);
     currentState.enPassantTargetSquare = (enPassantTargetSquare == "-" ? 0 : (enPassantTargetSquare[1] - 1) * 8 + (enPassantTargetSquare[0] - 'a'));
-    currentState.halfmoveClock = halfmoveClock;
-    currentState.fullmoveCounter = fullmoveCounter;
     fill(currentState.bitboards, currentState.bitboards + 12, 0);
 
     int rank = 7, file = 0;
@@ -116,8 +112,8 @@ string Board::getAsFenString() const
     if (8 & currentState.castlingRights) result << "q";
     if ((15 & currentState.castlingRights) == 0) result << "-";
 
-    int enPassantSquareIdx = lsbIdx(currentState.enPassantTargetSquare) - 1;
-    if (enPassantSquareIdx != -1) result << " " << ('a' + enPassantSquareIdx % 8) << (1 + enPassantSquareIdx / 8);
+    int enPassantSquareIdx = lsbIdx(currentState.enPassantTargetSquare);
+    if (enPassantSquareIdx != -1) result << " " << (char)('a' + enPassantSquareIdx % 8) << (1 + enPassantSquareIdx / 8);
     else result << " -";
 
     result << ' ' << currentState.halfmoveClock << ' ' << currentState.fullmoveCounter;
@@ -156,6 +152,10 @@ void Board::makeMove(const pair<U64, U64>& move)
         {
             currentState.bitboards[i] = currentState.bitboards[i] & (~move.first);
             currentState.bitboards[i] = currentState.bitboards[i] | move.second;
+
+            if (i % 6 == 0 && (move.first << 16 == move.second || move.first >> 16 == move.second)) currentState.enPassantTargetSquare = move.second;
+            else currentState.enPassantTargetSquare = 0;
+
             break;
         }
     }
@@ -170,3 +170,4 @@ void Board::undoMove()
     currentState = prevStates[prevStates.size() - 1];
     prevStates.pop_back();
 }
+

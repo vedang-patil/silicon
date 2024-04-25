@@ -1,5 +1,9 @@
 #include <bits/stdc++.h>
 #include "uci.hpp"
+#include "bitboard.hpp"
+#include "board.hpp"
+#include "search.hpp"
+#include "movegen.hpp"
 
 typedef unsigned long long U64;
 
@@ -36,7 +40,8 @@ void UCI::handleCommand(const string& command)
     }
     else if (tokens[0] == "go")
     {
-        go(tokens);
+        thread t(&UCI::go, this, tokens);
+        t.detach();
     }
     else if (tokens[0] == "stop")
     {
@@ -73,6 +78,30 @@ void UCI::position(const vector<string>& tokens)
 
 void UCI::go(const vector<string>& tokens)
 {
+    vector<pair<U64, U64>> moves;
+    generateMoves(board, moves);
+    pair<U64, U64> bestMove;
+    int bestMoveEval = -1e9;
+
+    for (pair<U64, U64> move: moves)
+    {
+        board.makeMove(move);
+        
+        int currentMoveEval = negaMax(board, 4);
+        if (currentMoveEval > bestMoveEval)
+        {
+            bestMoveEval = currentMoveEval;
+            bestMove = move;
+        }
+        
+        board.undoMove();
+    }
+
+    int fromidx = lsbIdx(bestMove.first);
+    int toidx = lsbIdx(bestMove.second);
+
+    outputStream << "bestMove " << (char)('a' + fromidx % 8) << (1 + fromidx / 8);
+    outputStream << (char)('a' + toidx % 8) << (1 + toidx / 8) << endl;
 }
 
 void UCI::stop()

@@ -32,7 +32,15 @@ int popCount(U64 x)
 
 int lsbIdx(U64 x)
 {
-    return popCount(lsb(x));
+    int i = -1;
+
+    while (x != 0)
+    {
+        x >>= 1;
+        i++;
+    }
+
+    return i;
 }
 
 void getSubsets(U64 x, vector<U64>& result)

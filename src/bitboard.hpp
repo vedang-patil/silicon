@@ -1,3 +1,4 @@
+#pragma once
 #include <bits/stdc++.h>
 
 #define A_FILE (72340172838076673ull)
