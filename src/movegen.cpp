@@ -113,14 +113,10 @@ U64 getPawnMovesBitboard(const Board& board, U64 square)
     {
         U64 push = (square << 8) & (~board.getOccupancyBitboard());
         U64 doublePush = (push << 8) & (~board.getOccupancyBitboard()) & RANK_4;
-        U64 leftDiagCapture = ((square & (~A_FILE)) << 7) & board.getOccupancyBitboard(!board.currentState.colour);
-        U64 rightDiagCapture = ((square & (~H_FILE)) << 9) & board.getOccupancyBitboard(!board.currentState.colour);
+        U64 leftDiagCapture = ((square & (~A_FILE)) << 7) & (board.getOccupancyBitboard(!board.currentState.colour) | board.currentState.enPassantTargetSquare);
+        U64 rightDiagCapture = ((square & (~H_FILE)) << 9) & (board.getOccupancyBitboard(!board.currentState.colour) | board.currentState.enPassantTargetSquare);
 
-        bool canEnPassantCapture = ((board.currentState.enPassantTargetSquare & (~A_FILE)) << 1) == square;
-        canEnPassantCapture |= ((board.currentState.enPassantTargetSquare & (~H_FILE)) >> 1) == square;
-        U64 enPassantCapture = (canEnPassantCapture ? (board.currentState.enPassantTargetSquare << 8) : 0);
-
-        return push | doublePush | leftDiagCapture | rightDiagCapture | enPassantCapture;
+        return push | doublePush | leftDiagCapture | rightDiagCapture;
     }
     else
     {

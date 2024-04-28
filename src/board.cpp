@@ -26,7 +26,7 @@ Board::Board(const string &fenString)
     currentState.castlingRights |= (castlingRights.find('Q') == string::npos ? 0 : 2);
     currentState.castlingRights |= (castlingRights.find('k') == string::npos ? 0 : 4);
     currentState.castlingRights |= (castlingRights.find('q') == string::npos ? 0 : 8);
-    currentState.enPassantTargetSquare = (enPassantTargetSquare == "-" ? 0 : (enPassantTargetSquare[1] - 1) * 8 + (enPassantTargetSquare[0] - 'a'));
+    currentState.enPassantTargetSquare = (enPassantTargetSquare == "-" ? 0 : 1ull<<((enPassantTargetSquare[1] - '1') * 8 + (enPassantTargetSquare[0] - 'a')));
     fill(currentState.bitboards, currentState.bitboards + 12, 0);
 
     int rank = 7, file = 0;
@@ -153,7 +153,8 @@ void Board::makeMove(const pair<U64, U64>& move)
             currentState.bitboards[i] = currentState.bitboards[i] & (~move.first);
             currentState.bitboards[i] = currentState.bitboards[i] | move.second;
 
-            if (i % 6 == 0 && (move.first << 16 == move.second || move.first >> 16 == move.second)) currentState.enPassantTargetSquare = move.second;
+            if (i == 0 && && move.first << 16 == move.second) currentState.enPassantTargetSquare = move.first << 8;
+            else if (i == 6 && && move.first >> 16 == move.second) currentState.enPassantTargetSquare = move.first >> 8;
             else currentState.enPassantTargetSquare = 0;
 
             break;

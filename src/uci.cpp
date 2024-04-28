@@ -72,7 +72,7 @@ void UCI::uciNewGame()
 
 void UCI::position(const vector<string>& tokens)
 {
-    this->board = ((tokens[1] == "startpos") ? Board() : Board(tokens[3] + tokens[4] + tokens[5] + tokens[6] + tokens[6] + tokens[8]));
+    this->board = ((tokens[1] == "startpos") ? Board() : Board(tokens[1] + ' ' + tokens[2] + ' ' + tokens[3] + ' ' + tokens[4] + ' ' + tokens[5] + ' ' + tokens[6]));
     for (size_t i = (tokens[1] == "startpos") ? 3: 9; i < tokens.size(); i++) board.makeMove(tokens[i]);
 }
 
