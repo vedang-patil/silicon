@@ -9,7 +9,7 @@ struct BoardState
 {
     U64 bitboards[12];
     bool colour;
-    U64 enPassantTargetSquare;
+    int enPassantSquareIdx;
     int castlingRights;
     int halfmoveClock;
     int fullmoveCounter;
@@ -32,7 +32,7 @@ public:
 
     void makeMove(const string& move);
 
-    void makeMove(const pair<U64, U64>& move);
+    void makeMove(const pair<int, int>& move);
     
     void undoMove();
 };

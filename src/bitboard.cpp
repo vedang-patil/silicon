@@ -53,7 +53,7 @@ void getSubsets(U64 x, vector<U64>& result)
 
         while (tempX != 0)
         {
-            if (i & (1 << j)) current |= popLsb(tempX);
+            if (i & (1ull << j)) current |= popLsb(tempX);
             else popLsb(tempX);
             j++;
         }

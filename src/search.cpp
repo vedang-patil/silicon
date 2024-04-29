@@ -27,11 +27,11 @@ int negaMax(Board &board, int depth)
 {
     if (depth == 0) return staticEval(board);
 
-    vector<pair<U64, U64>> moves;
+    vector<pair<int, int>> moves;
     generateMoves(board, moves);
     int best = -1e9;
 
-    for (pair<U64, U64>& move: moves)
+    for (pair<int, int>& move: moves)
     {
         board.makeMove(move);
         int score = -negaMax(board, depth - 1);

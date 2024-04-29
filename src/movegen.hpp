@@ -10,7 +10,7 @@ void initRookLookup();
 
 void initBishopLookup();
 
-void generateMoves(const Board& board, vector<pair<U64, U64>>& moves);
+void generateMoves(const Board& board, vector<pair<int, int>>& moves);
 
 U64 getPawnMovesBitboard(const Board& board, U64 square);
 

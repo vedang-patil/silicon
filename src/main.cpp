@@ -3,8 +3,6 @@
 #include "movegen.hpp"
 #include "board.hpp"
 
-typedef unsigned long long U64;
-
 using namespace std;
 
 int main()
@@ -12,7 +10,7 @@ int main()
     initRookLookup();
     initBishopLookup();
 
-    UCI uci(cout);
+    UCI uci;
     string command = "";
 
     while (command != "quit")

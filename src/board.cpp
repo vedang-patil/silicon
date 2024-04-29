@@ -26,7 +26,7 @@ Board::Board(const string &fenString)
     currentState.castlingRights |= (castlingRights.find('Q') == string::npos ? 0 : 2);
     currentState.castlingRights |= (castlingRights.find('k') == string::npos ? 0 : 4);
     currentState.castlingRights |= (castlingRights.find('q') == string::npos ? 0 : 8);
-    currentState.enPassantTargetSquare = (enPassantTargetSquare == "-" ? 0 : 1ull<<((enPassantTargetSquare[1] - '1') * 8 + (enPassantTargetSquare[0] - 'a')));
+    currentState.enPassantSquareIdx = (enPassantTargetSquare == "-" ? -1 : (enPassantTargetSquare[1] - '1') * 8 + (enPassantTargetSquare[0] - 'a'));
     fill(currentState.bitboards, currentState.bitboards + 12, 0);
 
     int rank = 7, file = 0;
@@ -112,8 +112,7 @@ string Board::getAsFenString() const
     if (8 & currentState.castlingRights) result << "q";
     if ((15 & currentState.castlingRights) == 0) result << "-";
 
-    int enPassantSquareIdx = lsbIdx(currentState.enPassantTargetSquare);
-    if (enPassantSquareIdx != -1) result << " " << (char)('a' + enPassantSquareIdx % 8) << (1 + enPassantSquareIdx / 8);
+    if (currentState.enPassantSquareIdx != -1) result << " " << (char)('a' + currentState.enPassantSquareIdx % 8) << (1 + currentState.enPassantSquareIdx / 8);
     else result << " -";
 
     result << ' ' << currentState.halfmoveClock << ' ' << currentState.fullmoveCounter;
@@ -137,29 +136,43 @@ U64 Board::getOccupancyBitboard(bool colour) const
 
 void Board::makeMove(const string& move)
 {
-    int fromIndex = (move[1] - '1') * 8 + (move[0] - 'a');
-    int toIndex = (move[3] - '1') * 8 + (move[2] - 'a');
-    this->makeMove(make_pair(1ull<<fromIndex, 1ull<<toIndex));
+    this->makeMove(make_pair((move[1] - '1') * 8 + (move[0] - 'a'), (move[3] - '1') * 8 + (move[2] - 'a')));
 }
 
-void Board::makeMove(const pair<U64, U64>& move)
+void Board::makeMove(const pair<int, int>& move)
 {
     prevStates.push_back(currentState);
 
+    int fromPiece = -1, toPiece = -1;
+
     for (int i = 0; i < 12; i++)
     {
-        if ((currentState.bitboards[i] & move.first) != 0)
-        {
-            currentState.bitboards[i] = currentState.bitboards[i] & (~move.first);
-            currentState.bitboards[i] = currentState.bitboards[i] | move.second;
-
-            if (i == 0 && && move.first << 16 == move.second) currentState.enPassantTargetSquare = move.first << 8;
-            else if (i == 6 && && move.first >> 16 == move.second) currentState.enPassantTargetSquare = move.first >> 8;
-            else currentState.enPassantTargetSquare = 0;
-
-            break;
-        }
+        if (currentState.bitboards[i] & (1ull<<move.first)) fromPiece = i;
+        else if (currentState.bitboards[i] & (1ull<<move.second)) toPiece = i;
     }
+
+    if (fromPiece == 0 && move.second == currentState.enPassantSquareIdx)
+    {
+        currentState.bitboards[0] &= ~(1ull<<move.first);
+        currentState.bitboards[0] |= (1ull<<move.second);
+        currentState.bitboards[6] &= ~(1ull<<(move.second - 8));
+    }
+    else if (fromPiece == 6 && move.second == currentState.enPassantSquareIdx)
+    {
+        currentState.bitboards[6] &= ~(1ull<<move.first);
+        currentState.bitboards[6] |= (1ull<<move.second);
+        currentState.bitboards[0] &= ~(1ull<<(move.second + 8));
+    }
+    else
+    {
+        currentState.bitboards[fromPiece] &= ~(1ull<<move.first);
+        if (toPiece != -1) currentState.bitboards[toPiece] &= ~(1ull<<move.second);
+        currentState.bitboards[fromPiece] |= 1ull<<move.second;
+    }
+
+    if (fromPiece == 0 && move.first + 16 == move.second) currentState.enPassantSquareIdx = move.first + 8;
+    else if (fromPiece == 6 && move.first - 16 == move.second) currentState.enPassantSquareIdx = move.first - 8;
+    else currentState.enPassantSquareIdx = -1;
 
     currentState.fullmoveCounter += currentState.colour;
     currentState.colour = !(currentState.colour);
