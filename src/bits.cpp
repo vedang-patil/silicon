@@ -1,5 +1,5 @@
 #include <bits/stdc++.h>
-#include "bitboard.hpp"
+#include "bits.hpp"
 
 typedef unsigned long long U64;
 
@@ -32,6 +32,7 @@ int popCount(U64 x)
 
 int lsbIdx(U64 x)
 {
+    x = lsb(x);
     int i = -1;
 
     while (x != 0)

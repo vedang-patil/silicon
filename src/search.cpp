@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 #include "board.hpp"
 #include "movegen.hpp"
-#include "bitboard.hpp"
+#include "bits.hpp"
 
 typedef unsigned long long U64; 
 

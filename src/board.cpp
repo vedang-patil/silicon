@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 #include "board.hpp"
-#include "bitboard.hpp"
+#include "bits.hpp"
 
 typedef unsigned long long U64;
 
@@ -150,7 +150,7 @@ void Board::makeMove(const pair<int, int>& move)
         if (currentState.bitboards[i] & (1ull<<move.first)) fromPiece = i;
         else if (currentState.bitboards[i] & (1ull<<move.second)) toPiece = i;
     }
-
+    
     if (fromPiece == 0 && move.second == currentState.enPassantSquareIdx)
     {
         currentState.bitboards[0] &= ~(1ull<<move.first);
@@ -162,6 +162,18 @@ void Board::makeMove(const pair<int, int>& move)
         currentState.bitboards[6] &= ~(1ull<<move.first);
         currentState.bitboards[6] |= (1ull<<move.second);
         currentState.bitboards[0] &= ~(1ull<<(move.second + 8));
+    }
+    else if (fromPiece == 0 && move.second / 8 == 7)
+    {
+        currentState.bitboards[fromPiece] &= ~(1ull<<move.first);
+        if (toPiece != -1) currentState.bitboards[toPiece] &= ~(1ull<<move.second);
+        currentState.bitboards[4] |= 1ull<<move.second;
+    }
+    else if (fromPiece == 6 && move.second / 8 == 0)
+    {
+        currentState.bitboards[fromPiece] &= ~(1ull<<move.first);
+        if (toPiece != -1) currentState.bitboards[toPiece] &= ~(1ull<<move.second);
+        currentState.bitboards[10] |= 1ull<<move.second;
     }
     else
     {
@@ -177,6 +189,8 @@ void Board::makeMove(const pair<int, int>& move)
     currentState.fullmoveCounter += currentState.colour;
     currentState.colour = !(currentState.colour);
     currentState.halfmoveClock++;
+
+    if (fromPiece == 0 || fromPiece == 6 || toPiece != -1) currentState.halfmoveClock = 0;
 }
 
 void Board::undoMove()
@@ -184,4 +198,3 @@ void Board::undoMove()
     currentState = prevStates[prevStates.size() - 1];
     prevStates.pop_back();
 }
-

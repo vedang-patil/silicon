@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 #include "movegen.hpp"
 #include "board.hpp"
-#include "bitboard.hpp"
+#include "bits.hpp"
 
 typedef unsigned long long U64;
 
@@ -116,8 +116,10 @@ U64 getPawnMovesBitboard(const Board& board, U64 square)
     {
         U64 push = (square << 8) & (~board.getOccupancyBitboard());
         U64 doublePush = (push << 8) & (~board.getOccupancyBitboard()) & RANK_4;
-        U64 leftDiagCapture = ((square & (~A_FILE)) << 7) & (board.getOccupancyBitboard(!board.currentState.colour) | (1<<board.currentState.enPassantSquareIdx));
-        U64 rightDiagCapture = ((square & (~H_FILE)) << 9) & (board.getOccupancyBitboard(!board.currentState.colour) | (1<<board.currentState.enPassantSquareIdx));
+
+        U64 enPassantSquare = (board.currentState.enPassantSquareIdx != -1 ? (1ull<<board.currentState.enPassantSquareIdx) : 0);
+        U64 leftDiagCapture = ((square & (~A_FILE)) << 7) & (board.getOccupancyBitboard(!board.currentState.colour) | enPassantSquare);
+        U64 rightDiagCapture = ((square & (~H_FILE)) << 9) & (board.getOccupancyBitboard(!board.currentState.colour) | enPassantSquare);
 
         return push | doublePush | leftDiagCapture | rightDiagCapture;
     }
@@ -125,8 +127,10 @@ U64 getPawnMovesBitboard(const Board& board, U64 square)
     {
         U64 push = (square >> 8) & (~board.getOccupancyBitboard());
         U64 doublePush = (push >> 8) & (~board.getOccupancyBitboard()) & RANK_5;
-        U64 leftDiagCapture = ((square & (~A_FILE)) >> 9) & (board.getOccupancyBitboard(!board.currentState.colour) | (1<<board.currentState.enPassantSquareIdx));
-        U64 rightDiagCapture = ((square & (~H_FILE)) >> 7) & (board.getOccupancyBitboard(!board.currentState.colour) | (1<<board.currentState.enPassantSquareIdx));
+
+        U64 enPassantSquare = (board.currentState.enPassantSquareIdx != -1 ? (1ull<<board.currentState.enPassantSquareIdx) : 0);
+        U64 leftDiagCapture = ((square & (~A_FILE)) >> 9) & (board.getOccupancyBitboard(!board.currentState.colour) | enPassantSquare);
+        U64 rightDiagCapture = ((square & (~H_FILE)) >> 7) & (board.getOccupancyBitboard(!board.currentState.colour) | enPassantSquare);
 
         return push | doublePush | leftDiagCapture | rightDiagCapture;
     }
@@ -158,12 +162,12 @@ U64 getKingMovesBitboard(const Board& board, U64 square)
 
 U64 getRookMovesBitboard(const Board& board, U64 square)
 {
-    return rookAttacks[square][rookAttacks[square][0] & board.getOccupancyBitboard()] & (~board.getOccupancyBitboard(board.currentState.colour));
+    return rookAttacks[lsbIdx(square)][rookAttacks[lsbIdx(square)][0] & board.getOccupancyBitboard()] & (~board.getOccupancyBitboard(board.currentState.colour));
 }
 
 U64 getBishopMovesBitboard(const Board& board, U64 square)
 {
-    return bishopAttacks[square][bishopAttacks[square][0] & board.getOccupancyBitboard()] & (~board.getOccupancyBitboard(board.currentState.colour));
+    return bishopAttacks[lsbIdx(square)][bishopAttacks[lsbIdx(square)][0] & board.getOccupancyBitboard()] & (~board.getOccupancyBitboard(board.currentState.colour));
 }
 
 U64 getQueenMovesBitboard(const Board& board, U64 square)
