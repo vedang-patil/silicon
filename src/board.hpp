@@ -7,12 +7,12 @@ using namespace std;
 
 struct BoardState
 {
-    U64 bitboards[12];
-    bool colour;
-    int enPassantSquareIdx;
-    int castlingRights;
-    int halfmoveClock;
-    int fullmoveCounter;
+    U64 bitboards[12] = {};
+    bool colour = false;
+    int enPassantSquareIdx = -1;
+    int castlingRights = 0;
+    int halfmoveClock = 0;
+    int fullmoveCounter = 0;
 };
 
 class Board

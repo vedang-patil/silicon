@@ -1,8 +1,6 @@
 #include <bits/stdc++.h>
 #include "bits.hpp"
 
-typedef unsigned long long U64;
-
 using namespace std;
 
 U64 lsb(U64 x)

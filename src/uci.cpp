@@ -1,8 +1,8 @@
 #include <bits/stdc++.h>
 #include "uci.hpp"
 #include "board.hpp"
-#include "search.hpp"
 #include "movegen.hpp"
+#include "utils.hpp"
 
 typedef unsigned long long U64;
 
@@ -15,10 +15,7 @@ UCI::UCI()
 
 void UCI::handleCommand(const string& command)
 {
-    vector<string> tokens;
-    stringstream ss(command);
-    string temp;
-    while (getline(ss, temp, ' ')) tokens.push_back(temp);
+    vector<string> tokens = split_str(command, ' ');
 
     if (tokens[0] == "uci") uci();
     else if (tokens[0] == "isready") isReady();
@@ -52,7 +49,7 @@ void UCI::uciNewGame()
 
 void UCI::position(const vector<string>& tokens)
 {
-    this->board = ((tokens[1] == "startpos") ? Board() : Board(tokens[1] + ' ' + tokens[2] + ' ' + tokens[3] + ' ' + tokens[4] + ' ' + tokens[5] + ' ' + tokens[6]));
+    this->board = ((tokens[1] == "startpos") ? Board() : Board(tokens[2] + ' ' + tokens[3] + ' ' + tokens[4] + ' ' + tokens[5] + ' ' + tokens[6] + ' ' + tokens[7]));
     for (size_t i = (tokens[1] == "startpos") ? 3: 8; i < tokens.size(); i++) board.makeMove(tokens[i]);
 }
 
@@ -60,23 +57,10 @@ void UCI::go(const vector<string>& tokens)
 {
     vector<pair<int, int>> moves;
     generateMoves(board, moves);
-    pair<int, int> bestMove;
-    int bestMoveEval = -1e9;
 
-    for (pair<int, int> move: moves)
-    {
-        board.makeMove(move);
-        
-        int currentMoveEval = negaMax(board, 4);
-        if (currentMoveEval > bestMoveEval)
-        {
-            bestMoveEval = currentMoveEval;
-            bestMove = move;
-        }
-        
-        board.undoMove();
-    }
-
+    srand(time(NULL));
+    pair<int, int> bestMove = moves[rand() % moves.size()];
+    
     cout << "bestMove " << (char)('a' + bestMove.first % 8) << (1 + bestMove.first / 8);
     cout << (char)('a' + bestMove.second % 8) << (1 + bestMove.second / 8) << endl;
 }

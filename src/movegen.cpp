@@ -138,14 +138,15 @@ U64 getPawnMovesBitboard(const Board& board, U64 square)
 
 U64 getKnightMovesBitboard(const Board& board, U64 square)
 {
-    U64 noNoEa = ((~(RANK_7 & RANK_8 & H_FILE) & (square)) << 17);
-    U64 noEaEa = ((~(RANK_8 & G_FILE & H_FILE) & (square)) << 10);
-    U64 soEaEa = ((~(RANK_1 & G_FILE & H_FILE) & (square)) >> 6);
-    U64 soSoEa = ((~(RANK_1 & RANK_2 & H_FILE) & (square)) >> 15);
-    U64 soSoWe = ((~(RANK_1 & RANK_2 & A_FILE) & (square)) >> 17);
-    U64 soWeWe = ((~(RANK_1 & A_FILE & B_FILE) & (square)) >> 10);
-    U64 noWeWe = ((~(RANK_8 & A_FILE & B_FILE) & (square)) << 6);
-    U64 noNoWe = ((~(RANK_8 & RANK_7 & A_FILE) & (square)) << 15);
+    U64 noNoEa = ((~(RANK_7 | RANK_8 | H_FILE) & square) << 17);
+    U64 noEaEa = ((~(RANK_8 | G_FILE | H_FILE) & square) << 10);
+    U64 soEaEa = ((~(RANK_1 | G_FILE | H_FILE) & square) >> 6);
+    U64 soSoEa = ((~(RANK_1 | RANK_2 | H_FILE) & square) >> 15);
+    U64 soSoWe = ((~(RANK_1 | RANK_2 | A_FILE) & square) >> 17);
+    U64 soWeWe = ((~(RANK_1 | A_FILE | B_FILE) & square) >> 10);
+    U64 noWeWe = ((~(RANK_8 | A_FILE | B_FILE) & square) << 6);
+    U64 noNoWe = ((~(RANK_8 | RANK_7 | A_FILE) & square) << 15);
+
     return (noNoEa | noEaEa | soEaEa | soSoEa | soSoWe | soWeWe | noWeWe | noNoWe) & (~board.getOccupancyBitboard(board.currentState.colour));
 }
 

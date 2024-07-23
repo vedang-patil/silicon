@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 #include "board.hpp"
 #include "bits.hpp"
+#include "utils.hpp"
 
 typedef unsigned long long U64;
 
@@ -12,25 +13,18 @@ Board::Board()
 
 Board::Board(const string &fenString)
 {
-    string piecePlacement;
-    char sideToMove;
-    string castlingRights;
-    string enPassantTargetSquare;
+    vector<string> pieces = split_str(fenString, ' ');
 
-    stringstream ss(fenString);
-    ss >> piecePlacement >> sideToMove >> castlingRights >> enPassantTargetSquare >> currentState.halfmoveClock >> currentState.fullmoveCounter;
-
-    currentState.colour = (sideToMove == 'b');
+    currentState.colour = (pieces[1] == "b");
     currentState.castlingRights = 0;
-    currentState.castlingRights |= (castlingRights.find('K') == string::npos ? 0 : 1);
-    currentState.castlingRights |= (castlingRights.find('Q') == string::npos ? 0 : 2);
-    currentState.castlingRights |= (castlingRights.find('k') == string::npos ? 0 : 4);
-    currentState.castlingRights |= (castlingRights.find('q') == string::npos ? 0 : 8);
-    currentState.enPassantSquareIdx = (enPassantTargetSquare == "-" ? -1 : (enPassantTargetSquare[1] - '1') * 8 + (enPassantTargetSquare[0] - 'a'));
-    fill(currentState.bitboards, currentState.bitboards + 12, 0);
+    currentState.castlingRights |= (pieces[2].find('K') == string::npos ? 0 : 1);
+    currentState.castlingRights |= (pieces[2].find('Q') == string::npos ? 0 : 2);
+    currentState.castlingRights |= (pieces[2].find('k') == string::npos ? 0 : 4);
+    currentState.castlingRights |= (pieces[2].find('q') == string::npos ? 0 : 8);
+    currentState.enPassantSquareIdx = (pieces[3] == "-" ? -1 : (pieces[3][1] - '1') * 8 + (pieces[3][0] - 'a'));
 
     int rank = 7, file = 0;
-    for (const char& c: piecePlacement)
+    for (const char& c: pieces[0])
     {
         if (c == '/') continue;
 
@@ -40,9 +34,8 @@ Board::Board(const string &fenString)
         }
         else
         {
-            int pieceIndex;
-            if (toupper(c) == 'P') pieceIndex = 0;
-            else if (toupper(c) == 'N') pieceIndex = 1;
+            int pieceIndex = 0;
+            if (toupper(c) == 'N') pieceIndex = 1;
             else if (toupper(c) == 'B') pieceIndex = 2;
             else if (toupper(c) == 'R') pieceIndex = 3;
             else if (toupper(c) == 'Q') pieceIndex = 4;
