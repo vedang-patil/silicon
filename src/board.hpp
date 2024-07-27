@@ -1,9 +1,9 @@
 #pragma once
-#include <bits/stdc++.h>
+#include <vector>
+#include <string>
+#include <utility>
 
 typedef unsigned long long U64;
-
-using namespace std;
 
 struct BoardState
 {
@@ -18,21 +18,21 @@ struct BoardState
 class Board
 {
 public:
-    vector<BoardState> prevStates;
+    std::vector<BoardState> prevStates;
     BoardState currentState;
 
     Board();
-    Board(const string &fenString);
+    Board(const std::string &fenString);
 
-    string getAsFenString() const;
+    std::string getAsFenString() const;
 
     U64 getOccupancyBitboard() const;
     
     U64 getOccupancyBitboard(bool colour) const;
 
-    void makeMove(const string& move);
+    void makeMove(const std::string& move);
 
-    void makeMove(const pair<int, int>& move);
+    void makeMove(const std::pair<int, int>& move);
     
     void undoMove();
 };

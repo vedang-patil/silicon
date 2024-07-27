@@ -1,4 +1,8 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <thread>
+#include <iostream>
 #include "uci.hpp"
 #include "board.hpp"
 #include "movegen.hpp"
@@ -6,70 +10,53 @@
 
 typedef unsigned long long U64;
 
-using namespace std;
-
 UCI::UCI()
 {
-    cout << "Silicon 2 by Vedang Patil" << endl;
+    std::cout << "Silicon 2 by Vedang Patil" << std::endl;
 }
 
-void UCI::handleCommand(const string& command)
+void UCI::handleCommand(const std::string& command)
 {
-    vector<string> tokens = split_str(command, ' ');
+    std::vector<std::string> tokens = split_str(command, ' ');
 
-    if (tokens[0] == "uci") uci();
-    else if (tokens[0] == "isready") isReady();
-    else if (tokens[0] == "ucinewgame") uciNewGame();
-    else if (tokens[0] == "position") position(tokens);
-    else if (tokens[0] == "stop") stop();
-    else if (tokens[0] == "display") display();
+    if (tokens[0] == "uci")
+    {
+        std::cout << "id name Silicon 2" << std::endl;
+        std::cout << "id author Vedang Patil" << std::endl;
+        std::cout << "uciok" << std::endl;
+    }
+    else if (tokens[0] == "isready")
+    {
+        std::cout << "readyok" << std::endl;
+    }
+    else if (tokens[0] == "position")
+    {
+        position(tokens);
+    }
+    else if (tokens[0] == "display")
+    {
+        std::cout << board.getAsFenString() << std::endl;
+    }
     else if (tokens[0] == "go")
     {
-        thread t(&UCI::go, this, tokens);
-        t.detach();
+        go(tokens);
     }
 }
 
-void UCI::uci()
-{
-    cout << "id name Silicon 2" << endl;
-    cout << "id author Vedang Patil" << endl;
-    cout << "uciok" << endl;
-}
-
-void UCI::isReady()
-{
-    cout << "readyok" << endl;
-}
-
-void UCI::uciNewGame()
-{
-    Board board;
-}
-
-void UCI::position(const vector<string>& tokens)
+void UCI::position(const std::vector<std::string>& tokens)
 {
     this->board = ((tokens[1] == "startpos") ? Board() : Board(tokens[2] + ' ' + tokens[3] + ' ' + tokens[4] + ' ' + tokens[5] + ' ' + tokens[6] + ' ' + tokens[7]));
     for (size_t i = (tokens[1] == "startpos") ? 3: 8; i < tokens.size(); i++) board.makeMove(tokens[i]);
 }
 
-void UCI::go(const vector<string>& tokens)
+void UCI::go(const std::vector<std::string>& tokens)
 {
-    vector<pair<int, int>> moves;
+    std::vector<std::pair<int, int>> moves;
     generateMoves(board, moves);
 
     srand(time(NULL));
-    pair<int, int> bestMove = moves[rand() % moves.size()];
+    std::pair<int, int> bestMove = moves[rand() % moves.size()];
     
-    cout << "bestMove " << (char)('a' + bestMove.first % 8) << (1 + bestMove.first / 8);
-    cout << (char)('a' + bestMove.second % 8) << (1 + bestMove.second / 8) << endl;
-}
-
-void UCI::stop()
-{
-}
-
-void UCI::display()
-{
-    cout << board.getAsFenString() << endl;
+    std::cout << "bestMove " << (char)('a' + bestMove.first % 8) << (1 + bestMove.first / 8);
+    std::cout << (char)('a' + bestMove.second % 8) << (1 + bestMove.second / 8) << std::endl;
 }

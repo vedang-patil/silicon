@@ -1,96 +1,43 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <utility>
+#include <map>
+#include "utils.hpp"
 #include "movegen.hpp"
 #include "board.hpp"
 #include "bits.hpp"
 
 typedef unsigned long long U64;
 
-using namespace std;
+U64 attacks[8][256];
 
-map<U64, U64> rookAttacks[64];
-map<U64, U64> bishopAttacks[64];
-
-void initRookLookup()
+void precomputeAttacks()
 {
-    for (int i = 0; i < 64; i++)
+    for (U64 i = 0; i < 8; i++)
     {
-        U64 src = 1ull<<i;
-        U64 unblockedOccupancy = 0;
-        U64 north = src, south = src, east = src, west = src;
-
-        for (int i = 0; i < 7; i++)
+        for (U64 j = 0; j < 256; j++)
         {
-            north = (north & ~RANK_7) << 8;
-            south = (south & ~RANK_2) >> 8;
-            east = (east & ~H_FILE & ~G_FILE) << 1;
-            west = (west & ~A_FILE & ~B_FILE) >> 1;
-            unblockedOccupancy |= (north | south | east | west);
-        }
-
-        vector<U64> possibleOccupancies;
-        getSubsets(unblockedOccupancy, possibleOccupancies);
-
-        for (U64 occupancy: possibleOccupancies)
-        {
-            U64 a = src, b = src, c = src, d = src;
             U64 result = 0;
 
-            for (int i = 0; i < 7; i++)
+            U64 left = ((1<<i) & ~A_FILE) >> 1;
+            U64 right = ((1<<i) & ~H_FILE) << 1;
+            for (int k = 0; k < 7; k++)
             {
-                a = (a & (~occupancy)) >> 8;
-                b = (b & (~occupancy)) << 8;
-                c = (c & (~H_FILE) & (~occupancy)) << 1;
-                d = (d & (~A_FILE) & (~occupancy)) >> 1;
-
-                result |= (a | b | c | d);
+                result |= (left | right);
+                left = (left & ~j & ~A_FILE) >> 1;
+                right = (right & ~j & ~H_FILE) << 1;
             }
 
-            rookAttacks[i][occupancy] = result;
+            result |= (result << 8);
+            result |= (result << 16);
+            result |= (result << 32);
+
+            attacks[i][j] = result;
         }
     }
 }
 
-void initBishopLookup()
-{
-    for (int i = 0; i < 64; i++)
-    {
-
-        U64 src = 1ull<<i;
-        U64 unblockedOccupancy = 0;
-        U64 northEast = src, southEast = src, northWest = src, southWest = src;
-        for (int i = 0; i < 7; i++)
-        {
-            northWest = (northWest & (~(A_FILE | B_FILE | RANK_8 | RANK_7))) << 7;
-            northEast = (northEast & (~(RANK_8 | RANK_7 | H_FILE | G_FILE))) << 9;
-            southEast = (southEast & (~(H_FILE | G_FILE | RANK_1 | RANK_2))) >> 7;
-            southWest = (southWest & (~(RANK_1 | RANK_2 | A_FILE | B_FILE))) >> 9;
-            unblockedOccupancy |= (northWest | northEast | southEast | southWest);
-        }
-
-        vector<U64> possibleOccupancies;
-        getSubsets(unblockedOccupancy, possibleOccupancies);
-
-        for (U64 occupancy: possibleOccupancies)
-        {
-            U64 a = src, b = src, c = src, d = src;
-            U64 result = 0;
-
-            for (int i = 0; i < 7; i++)
-            {
-                a = (a & (~(A_FILE | RANK_8)) & (~occupancy)) << 7;
-                b = (b & (~(RANK_8 | H_FILE)) & (~occupancy)) << 9;
-                c = (c & (~(H_FILE | RANK_1)) & (~occupancy)) >> 7;
-                d = (d & (~(RANK_1 | A_FILE)) & (~occupancy)) >> 9;
-
-                result |= (a | b | c | d);
-            }
-
-            bishopAttacks[i][occupancy] = result;
-        }
-    }
-}
-
-void generateMoves(const Board& board, vector<pair<int, int>>& moves)
+void generateMoves(const Board& board, std::vector<std::pair<int, int>>& moves)
 {
     U64 currentColourBitboard = board.getOccupancyBitboard(board.currentState.colour);
 
@@ -158,17 +105,61 @@ U64 getKingMovesBitboard(const Board& board, U64 square)
     U64 up = ((leftSquare | square | rightSquare) << 8);
     U64 down = ((leftSquare | square | rightSquare) >> 8);
 
-    return (leftSquare | rightSquare | up | down) & (~board.getOccupancyBitboard(board.currentState.colour));
+    U64 result = (leftSquare | rightSquare | up | down) & (~board.getOccupancyBitboard(board.currentState.colour));
+
+    if (board.currentState.colour == 0)
+    {
+        if ((board.currentState.castlingRights | 1) && (board.getOccupancyBitboard() & 96) == 0) result |= 64;
+        if ((board.currentState.castlingRights | 2) && (board.getOccupancyBitboard() & 14) == 0) result |= 4;
+    }
+    else
+    {
+        if ((board.currentState.castlingRights | 4) && (board.getOccupancyBitboard() & 6917529027641081856ull) == 0)
+            result |= 4611686018427387904ull;
+        if ((board.currentState.castlingRights | 8) && (board.getOccupancyBitboard() & 1008806316530991104ull) == 0)
+            result |= 288230376151711744ull;
+    }
+
+    return result;
+}
+
+U64 getRankMovesBitboard(const Board& board, U64 square)
+{
+    U64 rank = eastFill(square) | westFill(square);
+    U64 result = rank & attacks[lsbIdx(square) % 8][((rank & board.getOccupancyBitboard()) * A_FILE) >> 56];
+    return result & ~board.getOccupancyBitboard(board.currentState.colour);
+}
+
+U64 getFileMovesBitboard(const Board& board, U64 square)
+{
+    U64 mainDiag = 9241421688590303745ull;
+    U64 result = attacks[7 - lsbIdx(square) / 8][(((board.getOccupancyBitboard() >> (lsbIdx(square) % 8)) & A_FILE) * mainDiag) >> 56];
+    result = ((((result & RANK_1) * mainDiag) >> 7) & A_FILE) << (lsbIdx(square) % 8);
+    return result & ~board.getOccupancyBitboard(board.currentState.colour);
+}
+
+U64 getDiagMovesBitboard(const Board& board, U64 square)
+{
+    U64 diag = northEastFill(square) | southWestFill(square);
+    U64 result = diag & attacks[lsbIdx(square) % 8][((diag & board.getOccupancyBitboard()) * A_FILE) >> 56];
+    return result & ~board.getOccupancyBitboard(board.currentState.colour);
+}
+
+U64 getAntiDiagMovesBitboard(const Board& board, U64 square)
+{
+    U64 antiDiag = northWestFill(square) | southEastFill(square);
+    U64 result = antiDiag & attacks[lsbIdx(square) % 8][((antiDiag & board.getOccupancyBitboard()) * A_FILE) >> 56];
+    return result & ~board.getOccupancyBitboard(board.currentState.colour);
 }
 
 U64 getRookMovesBitboard(const Board& board, U64 square)
 {
-    return rookAttacks[lsbIdx(square)][rookAttacks[lsbIdx(square)][0] & board.getOccupancyBitboard()] & (~board.getOccupancyBitboard(board.currentState.colour));
+    return getRankMovesBitboard(board, square) | getFileMovesBitboard(board, square);
 }
 
 U64 getBishopMovesBitboard(const Board& board, U64 square)
 {
-    return bishopAttacks[lsbIdx(square)][bishopAttacks[lsbIdx(square)][0] & board.getOccupancyBitboard()] & (~board.getOccupancyBitboard(board.currentState.colour));
+    return getDiagMovesBitboard(board, square) | getAntiDiagMovesBitboard(board, square);
 }
 
 U64 getQueenMovesBitboard(const Board& board, U64 square)

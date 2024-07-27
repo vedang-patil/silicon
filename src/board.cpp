@@ -1,27 +1,30 @@
-#include <bits/stdc++.h>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <utility>
 #include "board.hpp"
 #include "bits.hpp"
 #include "utils.hpp"
 
 typedef unsigned long long U64;
 
-using namespace std;
-
 Board::Board()
     :Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 {}
 
-Board::Board(const string &fenString)
+Board::Board(const std::string &fenString)
 {
-    vector<string> pieces = split_str(fenString, ' ');
+    std::vector<std::string> pieces = split_str(fenString, ' ');
 
     currentState.colour = (pieces[1] == "b");
     currentState.castlingRights = 0;
-    currentState.castlingRights |= (pieces[2].find('K') == string::npos ? 0 : 1);
-    currentState.castlingRights |= (pieces[2].find('Q') == string::npos ? 0 : 2);
-    currentState.castlingRights |= (pieces[2].find('k') == string::npos ? 0 : 4);
-    currentState.castlingRights |= (pieces[2].find('q') == string::npos ? 0 : 8);
+    currentState.castlingRights |= (pieces[2].find('K') == std::string::npos ? 0 : 1);
+    currentState.castlingRights |= (pieces[2].find('Q') == std::string::npos ? 0 : 2);
+    currentState.castlingRights |= (pieces[2].find('k') == std::string::npos ? 0 : 4);
+    currentState.castlingRights |= (pieces[2].find('q') == std::string::npos ? 0 : 8);
     currentState.enPassantSquareIdx = (pieces[3] == "-" ? -1 : (pieces[3][1] - '1') * 8 + (pieces[3][0] - 'a'));
+    currentState.halfmoveClock = stoi(pieces[4]);
+    currentState.fullmoveCounter = stoi(pieces[5]);
 
     int rank = 7, file = 0;
     for (const char& c: pieces[0])
@@ -52,9 +55,9 @@ Board::Board(const string &fenString)
     }
 }
 
-string Board::getAsFenString() const
+std::string Board::getAsFenString() const
 {
-    stringstream result;
+    std::stringstream result;
     int rank = 7, file = 0;
     int emptyCount = 0;
     for (int i = 0; i < 64; i++)
@@ -127,12 +130,12 @@ U64 Board::getOccupancyBitboard(bool colour) const
     return result;
 }
 
-void Board::makeMove(const string& move)
+void Board::makeMove(const std::string& move)
 {
-    this->makeMove(make_pair((move[1] - '1') * 8 + (move[0] - 'a'), (move[3] - '1') * 8 + (move[2] - 'a')));
+    this->makeMove(std::make_pair((move[1] - '1') * 8 + (move[0] - 'a'), (move[3] - '1') * 8 + (move[2] - 'a')));
 }
 
-void Board::makeMove(const pair<int, int>& move)
+void Board::makeMove(const std::pair<int, int>& move)
 {
     prevStates.push_back(currentState);
 
@@ -155,6 +158,38 @@ void Board::makeMove(const pair<int, int>& move)
         currentState.bitboards[6] &= ~(1ull<<move.first);
         currentState.bitboards[6] |= (1ull<<move.second);
         currentState.bitboards[0] &= ~(1ull<<(move.second + 8));
+    }
+    else if (fromPiece == 5 && move.first == 4 && (move.second == 2 || move.second == 6))
+    {
+        currentState.bitboards[5] &= ~(1ull<<move.first);
+        currentState.bitboards[5] |= (1ull<<move.second);
+        
+        if (move.second == 2)
+        {
+            currentState.bitboards[3] &= ~(1);
+            currentState.bitboards[3] |= (8);
+        }
+        else if (move.second == 6)
+        {
+            currentState.bitboards[9] &= ~(1ull<<7);
+            currentState.bitboards[9] |= (1ull<<5);
+        }
+    }
+    else if (fromPiece == 11 && move.first == 60 && (move.second == 58 || move.second == 62))
+    {
+        currentState.bitboards[11] &= ~(1ull<<move.first);
+        currentState.bitboards[11] |= (1ull<<move.second);
+
+        if (move.second == 58)
+        {
+            currentState.bitboards[56] &= ~(1);
+            currentState.bitboards[59] |= (8);
+        }
+        else if (move.second == 62)
+        {
+            currentState.bitboards[63] &= ~(1ull<<7);
+            currentState.bitboards[61] |= (1ull<<5);
+        }
     }
     else if (fromPiece == 0 && move.second / 8 == 7)
     {

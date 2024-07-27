@@ -1,7 +1,5 @@
-#include <bits/stdc++.h>
+#include <vector>
 #include "bits.hpp"
-
-using namespace std;
 
 U64 lsb(U64 x)
 {
@@ -42,7 +40,7 @@ int lsbIdx(U64 x)
     return i;
 }
 
-void getSubsets(U64 x, vector<U64>& result)
+void getSubsets(U64 x, std::vector<U64>& result)
 {
     for (U64 i = 0; i < (1ull<<popCount(x)); i++)
     {

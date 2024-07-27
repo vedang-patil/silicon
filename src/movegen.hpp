@@ -1,16 +1,13 @@
 #pragma once
-#include <bits/stdc++.h>
+#include <vector>
+#include <utility>
 #include "board.hpp"
 
 typedef unsigned long long U64; 
 
-using namespace std;
+void precomputeAttacks();
 
-void initRookLookup();
-
-void initBishopLookup();
-
-void generateMoves(const Board& board, vector<pair<int, int>>& moves);
+void generateMoves(const Board& board, std::vector<std::pair<int, int>>& moves);
 
 U64 getPawnMovesBitboard(const Board& board, U64 square);
 

@@ -1,5 +1,5 @@
 #pragma once
-#include <bits/stdc++.h>
+#include <vector>
 
 typedef unsigned long long U64;
 
@@ -23,8 +23,6 @@ const U64 RANK_8 = (RANK_7 << 8);
 
 typedef unsigned long long U64;
 
-using namespace std;
-
 U64 lsb(U64 x);
 
 U64 popLsb(U64& x);
@@ -33,4 +31,4 @@ int popCount(U64 x);
 
 int lsbIdx(U64 x);
 
-void getSubsets(U64 x, vector<U64>& result);
+void getSubsets(U64 x, std::vector<U64>& result);

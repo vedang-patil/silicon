@@ -1,8 +1,9 @@
 #pragma once
-#include <bits/stdc++.h>
+#include <vector>
+#include <string>
 #include "board.hpp"
 
-using namespace std;
+typedef unsigned long long U64;
 
 class UCI
 {
@@ -11,19 +12,9 @@ private:
 public:
     UCI();
 
-    void handleCommand(const string& command);
+    void handleCommand(const std::string& command);
     
-    void uci();
+    void position(const std::vector<std::string>& tokens);
 
-    void isReady();
-
-    void uciNewGame();
-
-    void position(const vector<string>& tokens);
-
-    void go(const vector<string>& tokens);
-
-    void stop();
-
-    void display();
+    void go(const std::vector<std::string>& tokens);
 };
