@@ -3,6 +3,8 @@
 #include <utility>
 #include <chrono>
 #include <iostream>
+#include "types.hpp"
+#include "attacks.hpp"
 #include "utils.hpp"
 #include "uci.hpp"
 #include "movegen.hpp"
@@ -12,11 +14,11 @@ int testMoveGeneration(Board &board, int depth)
 {
     if (!depth) return 1;
 
-    std::vector<std::pair<int, int>> moves;
-    generateMoves(board, moves);
+    std::vector<Move> moves = generateLegalMoves(board);
+    if (moves.size() == 0) return 1;
 
     int numberofPositions = 0;
-    for (std::pair<int, int> move: moves)
+    for (Move move: moves)
     {
         board.makeMove(move);
         numberofPositions += testMoveGeneration(board, depth - 1);
@@ -47,6 +49,15 @@ int main()
         std::chrono::duration<double> duration  = stop - start;
         printf("Depth: %d, Positions: %d, Time: %lf\n", i, x, duration.count());
     }
+
+    // Board board;
+    // std::vector<Move> moves = generateLegalMoves(board);
+    // for (Move move: moves)
+    // {
+    //     board.makeMove(move);
+    //     std::cout << numToCoord(move.from) << numToCoord(move.to) << " " << testMoveGeneration(board, 5) << std::endl;
+    //     board.undoMove();
+    // }
 
     // UCI uci;
     // string command = "";

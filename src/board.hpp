@@ -2,14 +2,13 @@
 #include <vector>
 #include <string>
 #include <utility>
-
-typedef unsigned long long U64;
+#include "types.hpp"
 
 struct BoardState
 {
     U64 bitboards[12] = {};
     bool colour = false;
-    int enPassantSquareIdx = -1;
+    int enPassantSquare = -1;
     int castlingRights = 0;
     int halfmoveClock = 0;
     int fullmoveCounter = 0;
@@ -32,7 +31,7 @@ public:
 
     void makeMove(const std::string& move);
 
-    void makeMove(const std::pair<int, int>& move);
+    void makeMove(const Move& move);
     
     void undoMove();
 };

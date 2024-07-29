@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include "types.hpp"
 #include "bits.hpp"
 
 typedef unsigned long long U64;

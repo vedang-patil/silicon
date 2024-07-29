@@ -1,10 +1,7 @@
 #include <iostream>
-#include <string>
-#include <vector>
 #include <thread>
 #include <iostream>
 #include "uci.hpp"
-#include "board.hpp"
 #include "movegen.hpp"
 #include "utils.hpp"
 
@@ -24,10 +21,6 @@ void UCI::handleCommand(const std::string& command)
         std::cout << "id name Silicon 2" << std::endl;
         std::cout << "id author Vedang Patil" << std::endl;
         std::cout << "uciok" << std::endl;
-    }
-    else if (tokens[0] == "isready")
-    {
-        std::cout << "readyok" << std::endl;
     }
     else if (tokens[0] == "position")
     {
@@ -51,12 +44,11 @@ void UCI::position(const std::vector<std::string>& tokens)
 
 void UCI::go(const std::vector<std::string>& tokens)
 {
-    std::vector<std::pair<int, int>> moves;
-    generateMoves(board, moves);
+    std::vector<Move> moves = generateLegalMoves(board);
 
     srand(time(NULL));
-    std::pair<int, int> bestMove = moves[rand() % moves.size()];
+    Move bestMove = moves[rand() % moves.size()];
     
-    std::cout << "bestMove " << (char)('a' + bestMove.first % 8) << (1 + bestMove.first / 8);
-    std::cout << (char)('a' + bestMove.second % 8) << (1 + bestMove.second / 8) << std::endl;
+    std::cout << "bestMove " << (char)('a' + bestMove.from % 8) << (1 + bestMove.from / 8);
+    std::cout << (char)('a' + bestMove.to % 8) << (1 + bestMove.to / 8) << std::endl;
 }

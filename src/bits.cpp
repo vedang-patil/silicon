@@ -1,4 +1,4 @@
-#include <vector>
+#include <bit>
 #include "bits.hpp"
 
 U64 lsb(U64 x)
@@ -28,16 +28,7 @@ int popCount(U64 x)
 
 int lsbIdx(U64 x)
 {
-    x = lsb(x);
-    int i = -1;
-
-    while (x != 0)
-    {
-        x >>= 1;
-        i++;
-    }
-
-    return i;
+   return std::countr_zero(x);
 }
 
 void getSubsets(U64 x, std::vector<U64>& result)
