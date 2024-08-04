@@ -10,9 +10,10 @@ class UCI
 {
 private:
     Board board;
-public:
-    UCI();
 
+public:
+    void loop();
+    
     void handleCommand(const std::string& command);
     
     void position(const std::vector<std::string>& tokens);

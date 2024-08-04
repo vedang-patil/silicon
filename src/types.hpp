@@ -34,7 +34,8 @@ struct Move
 
     Move(int from, int to, int promotion)
     {
-        Move(from, to);
+        this->from = from;
+        this->to = to;
         this->promotion = promotion;
     }
 };

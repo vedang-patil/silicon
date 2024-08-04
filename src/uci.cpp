@@ -1,3 +1,4 @@
+#include <string>
 #include <iostream>
 #include <thread>
 #include <iostream>
@@ -7,9 +8,16 @@
 
 typedef unsigned long long U64;
 
-UCI::UCI()
+void UCI::loop()
 {
     std::cout << "Silicon 2 by Vedang Patil" << std::endl;
+
+    std::string command;
+    while (command != "quit")
+    {
+        getline(std::cin, command);
+        handleCommand(command);
+    }
 }
 
 void UCI::handleCommand(const std::string& command)
@@ -22,6 +30,10 @@ void UCI::handleCommand(const std::string& command)
         std::cout << "id author Vedang Patil" << std::endl;
         std::cout << "uciok" << std::endl;
     }
+    else if (tokens[0] == "isready")
+    {
+        std::cout << "readyok" << std::endl;
+    }
     else if (tokens[0] == "position")
     {
         position(tokens);
@@ -33,6 +45,10 @@ void UCI::handleCommand(const std::string& command)
     else if (tokens[0] == "go")
     {
         go(tokens);
+    }
+    else if (tokens[0] == "stop")
+    {
+        // Later
     }
 }
 

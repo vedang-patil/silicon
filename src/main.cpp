@@ -15,7 +15,7 @@ int testMoveGeneration(Board &board, int depth)
     if (!depth) return 1;
 
     std::vector<Move> moves = generateLegalMoves(board);
-    if (moves.size() == 0) return 1;
+    if (moves.size() == 0) return 0;
 
     int numberofPositions = 0;
     for (Move move: moves)
@@ -36,13 +36,24 @@ std::string numToCoord(int num)
     return std::string(1, 'a' + file) + std::to_string(rank + 1);
 }
 
+std::string numToPromoPiece(int num)
+{
+    if (num == 1) return "n";
+    else if (num == 2) return "b";
+    else if (num == 3) return "r";
+    else if (num == 4) return "q";
+
+    return "";
+}
+
 int main()
 {
     precomputeAttacks();
+    // UCI().loop();
 
-    for (int i = 1; i <= 5; i++)
+    for (int i = 1; i <= 6; i++)
     {
-        Board board;
+        Board board("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10");
         auto start = std::chrono::high_resolution_clock::now();
         int x = testMoveGeneration(board, i);
         auto stop = std::chrono::high_resolution_clock::now();
@@ -50,21 +61,18 @@ int main()
         printf("Depth: %d, Positions: %d, Time: %lf\n", i, x, duration.count());
     }
 
-    // Board board;
+    // Board board("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 0");
     // std::vector<Move> moves = generateLegalMoves(board);
+    // int total = 0;
+
     // for (Move move: moves)
     // {
     //     board.makeMove(move);
-    //     std::cout << numToCoord(move.from) << numToCoord(move.to) << " " << testMoveGeneration(board, 5) << std::endl;
+    //     int x = testMoveGeneration(board, 1);
+    //     total += x;
+    //     std::cout << numToCoord(move.from) << numToCoord(move.to) << numToPromoPiece(move.promotion) << " " << x << std::endl;
     //     board.undoMove();
     // }
 
-    // UCI uci;
-    // string command = "";
-
-    // while (command != "quit")
-    // {
-    //     getline(cin, command);
-    //     uci.handleCommand(command);
-    // }
+    // std::cout << "Total: " << total << std::endl;
 }

@@ -145,6 +145,8 @@ void Board::makeMove(const Move& move)
         if (currentState.bitboards[i] & (1ull<<move.from)) fromPiece = i;
         else if (currentState.bitboards[i] & (1ull<<move.to)) toPiece = i;
     }
+
+    if (fromPiece == -1) std::cout << getAsFenString() << " |||| " << move.from << " " << move.to << std::endl;
     
     if (fromPiece == 0 && move.to == currentState.enPassantSquare)
     {
@@ -170,8 +172,8 @@ void Board::makeMove(const Move& move)
         }
         else if (move.to == 6)
         {
-            currentState.bitboards[9] &= ~(1ull<<7);
-            currentState.bitboards[9] |= (1ull<<5);
+            currentState.bitboards[3] &= ~(1ull<<7);
+            currentState.bitboards[3] |= (1ull<<5);
         }
     }
     else if (fromPiece == 11 && move.from == 60 && (move.to == 58 || move.to == 62))
@@ -181,13 +183,13 @@ void Board::makeMove(const Move& move)
 
         if (move.to == 58)
         {
-            currentState.bitboards[56] &= ~(1);
-            currentState.bitboards[59] |= (8);
+            currentState.bitboards[9] &= ~(1ull<<56);
+            currentState.bitboards[9] |= (1ull<<59);
         }
         else if (move.to == 62)
         {
-            currentState.bitboards[63] &= ~(1ull<<7);
-            currentState.bitboards[61] |= (1ull<<5);
+            currentState.bitboards[9] &= ~(1ull<<63);
+            currentState.bitboards[9] |= (1ull<<61);
         }
     }
     else if (fromPiece == 0 && move.to / 8 == 7)
@@ -195,9 +197,9 @@ void Board::makeMove(const Move& move)
         currentState.bitboards[fromPiece] &= ~(1ull<<move.from);
         if (toPiece != -1) currentState.bitboards[toPiece] &= ~(1ull<<move.to);
         if (move.promotion == 1) currentState.bitboards[1] |= 1ull<<move.to;
-        else if (move.promotion == 2) currentState.bitboards[3] |= 1ull<<move.to;
-        else if (move.promotion == 3) currentState.bitboards[4] |= 1ull<<move.to;
-        else if (move.promotion == 4) currentState.bitboards[5] |= 1ull<<move.to;
+        else if (move.promotion == 2) currentState.bitboards[2] |= 1ull<<move.to;
+        else if (move.promotion == 3) currentState.bitboards[3] |= 1ull<<move.to;
+        else if (move.promotion == 4) currentState.bitboards[4] |= 1ull<<move.to;
     }
     else if (fromPiece == 6 && move.to / 8 == 0)
     {
@@ -218,6 +220,17 @@ void Board::makeMove(const Move& move)
     if (fromPiece == 0 && move.from + 16 == move.to) currentState.enPassantSquare = move.from + 8;
     else if (fromPiece == 6 && move.from - 16 == move.to) currentState.enPassantSquare = move.from - 8;
     else currentState.enPassantSquare = -1;
+
+    if (fromPiece == 5) currentState.castlingRights &= ~3;
+    else if (fromPiece == 3 && move.from == 0) currentState.castlingRights &= ~2;
+    else if (fromPiece == 3 && move.from == 7) currentState.castlingRights &= ~1;
+    else if (fromPiece == 11) currentState.castlingRights &= ~12;
+    else if (fromPiece == 9 && move.from == 56) currentState.castlingRights &= ~8;
+    else if (fromPiece == 9 && move.from == 63) currentState.castlingRights &= ~4;
+    else if (move.to == 0) currentState.castlingRights &= ~2;
+    else if (move.to == 7) currentState.castlingRights &= ~1;
+    else if (move.to == 56) currentState.castlingRights &= ~8;
+    else if (move.to == 63) currentState.castlingRights &= ~4;
 
     currentState.fullmoveCounter += currentState.colour;
     currentState.colour = !(currentState.colour);
