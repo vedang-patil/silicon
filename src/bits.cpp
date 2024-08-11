@@ -30,22 +30,3 @@ int lsbIdx(U64 x)
 {
    return std::countr_zero(x);
 }
-
-void getSubsets(U64 x, std::vector<U64>& result)
-{
-    for (U64 i = 0; i < (1ull<<popCount(x)); i++)
-    {
-        U64 tempX = x;
-        U64 current = 0;
-        int j = 0;
-
-        while (tempX != 0)
-        {
-            if (i & (1ull << j)) current |= popLsb(tempX);
-            else popLsb(tempX);
-            j++;
-        }
-
-        result.push_back(current);
-    }
-}

@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include "board.hpp"
 #include "types.hpp"
 #include "bits.hpp"
 

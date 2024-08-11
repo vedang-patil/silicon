@@ -5,6 +5,7 @@
 #include "uci.hpp"
 #include "movegen.hpp"
 #include "utils.hpp"
+#include "search.hpp"
 
 typedef unsigned long long U64;
 
@@ -18,6 +19,24 @@ void UCI::loop()
         getline(std::cin, command);
         handleCommand(command);
     }
+}
+
+int testMoveGeneration(Board &board, int depth)
+{
+    if (!depth) return 1;
+
+    std::vector<Move> moves = generateLegalMoves(board);
+    if (moves.size() == 0) return 0;
+
+    int numberofPositions = 0;
+    for (Move move: moves)
+    {
+        board.makeMove(move);
+        numberofPositions += testMoveGeneration(board, depth - 1);
+        board.undoMove();
+    }
+
+    return numberofPositions;
 }
 
 void UCI::handleCommand(const std::string& command)
@@ -44,11 +63,41 @@ void UCI::handleCommand(const std::string& command)
     }
     else if (tokens[0] == "go")
     {
-        go(tokens);
+        std::thread t(&UCI::go, this, tokens);
+        t.detach();
     }
     else if (tokens[0] == "stop")
     {
-        // Later
+    }
+    else if (tokens[0] == "depthtest")
+    {
+        for (int i = 0; i <= stoi(tokens[1]); i++)
+        {
+            auto start = std::chrono::high_resolution_clock::now();
+            int x = testMoveGeneration(board, i);
+            auto stop = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> duration  = stop - start;
+            printf("Depth: %d, Positions: %d, Time: %lf\n", i, x, duration.count());
+        }
+    }
+    else if (tokens[0] == "perft")
+    {
+        std::vector<Move> moves = generateLegalMoves(board);
+        long long int total = 0;
+
+        for (Move move: moves)
+        {
+            board.makeMove(move);
+            int x = testMoveGeneration(board, stoi(tokens[1]) - 1);
+            total += x;
+            std::cout << std::string(1, 'a' + (move.from % 8)) + std::to_string((move.from / 8) + 1);
+            std::cout << std::string(1, 'a' + (move.to % 8)) + std::to_string((move.to / 8) + 1);
+            std::cout << (move.promotion == 1 ? "n" : move.promotion == 2 ? "b" : move.promotion == 3 ? "r" : move.promotion == 4 ? "q" : "");
+            std::cout << " " << x << std::endl;
+            board.undoMove();
+        }
+
+        std::cout << "Total: " << total << std::endl;
     }
 }
 
@@ -60,11 +109,30 @@ void UCI::position(const std::vector<std::string>& tokens)
 
 void UCI::go(const std::vector<std::string>& tokens)
 {
+    int depth = 3;
+    if (tokens[1] == "depth") depth = stoi(tokens[2]);
+
     std::vector<Move> moves = generateLegalMoves(board);
 
-    srand(time(NULL));
-    Move bestMove = moves[rand() % moves.size()];
+    size_t bestMoveIdx = -1;
+    int bestMoveEval = -1e9;
+
+    for (size_t moveIdx = 0; moveIdx < moves.size(); moveIdx++)
+    {
+        board.makeMove(moves[moveIdx]);
+        int currentMoveEval = -negamax(board, depth);
+
+        if (currentMoveEval > bestMoveEval)
+        {
+            bestMoveEval = currentMoveEval;
+            bestMoveIdx = moveIdx;
+        }
+
+        board.undoMove();
+    }
+
+    if (bestMoveIdx == -1) bestMoveIdx = 0;
     
-    std::cout << "bestMove " << (char)('a' + bestMove.from % 8) << (1 + bestMove.from / 8);
-    std::cout << (char)('a' + bestMove.to % 8) << (1 + bestMove.to / 8) << std::endl;
+    std::cout << "bestMove " << (char)('a' + moves[bestMoveIdx].from % 8) << (1 + moves[bestMoveIdx].from / 8);
+    std::cout << (char)('a' + moves[bestMoveIdx].to % 8) << (1 + moves[bestMoveIdx].to / 8) << std::endl;
 }

@@ -22,14 +22,20 @@ const U64 RANK_8 = (RANK_7 << 8);
 
 struct Move
 {
-    int from = 0;
-    int to = 0;
-    int promotion = 0;
+    int from, to, promotion;
+
+    Move()
+    {
+        this->from = 0;
+        this->to = 0;
+        this->promotion = 0;
+    }
 
     Move(int from, int to)
     {
         this->from = from;
         this->to = to;
+        this->promotion = 0;
     }
 
     Move(int from, int to, int promotion)

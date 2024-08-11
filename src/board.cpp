@@ -1,5 +1,6 @@
 #include <sstream>
 #include <iostream>
+#include <bitset>
 #include "types.hpp"
 #include "board.hpp"
 #include "bits.hpp"
@@ -145,8 +146,6 @@ void Board::makeMove(const Move& move)
         if (currentState.bitboards[i] & (1ull<<move.from)) fromPiece = i;
         else if (currentState.bitboards[i] & (1ull<<move.to)) toPiece = i;
     }
-
-    if (fromPiece == -1) std::cout << getAsFenString() << " |||| " << move.from << " " << move.to << std::endl;
     
     if (fromPiece == 0 && move.to == currentState.enPassantSquare)
     {
