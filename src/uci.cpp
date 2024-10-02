@@ -7,6 +7,8 @@
 #include "utils.hpp"
 #include "search.hpp"
 
+#include "hashing.hpp"
+
 typedef unsigned long long U64;
 
 void UCI::loop()
@@ -56,6 +58,8 @@ void UCI::handleCommand(const std::string& command)
     else if (tokens[0] == "position")
     {
         position(tokens);
+
+        std::cout << computeZobristHash(board.currentState) << std::endl;
     }
     else if (tokens[0] == "display")
     {
