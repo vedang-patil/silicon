@@ -121,10 +121,12 @@ void UCI::go(const std::vector<std::string>& tokens)
     size_t bestMoveIdx = -1;
     int bestMoveEval = -1e9;
 
+    TranspositionTable<int> transpositionTable(0);
+
     for (size_t moveIdx = 0; moveIdx < moves.size(); moveIdx++)
     {
         board.makeMove(moves[moveIdx]);
-        int currentMoveEval = -negamax(board, depth);
+        int currentMoveEval = -negamax(board, transpositionTable, depth);
 
         if (currentMoveEval > bestMoveEval)
         {

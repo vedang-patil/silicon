@@ -19,12 +19,12 @@ int staticAnalysis(const Board &board)
     return (board.currentState.colour ? -score : score);
 }
 
-int negamax(Board &board, int depth)
+int negamax(Board &board, TranspositionTable<int> &transpositionTable, int depth)
 {
-    return negamax(board, depth, -1e9, 1e9);
+    return negamax(board, transpositionTable, depth, -1e9, 1e9);
 }
 
-int negamax(Board &board, int depth, int alpha, int beta)
+int negamax(Board &board, TranspositionTable<int> &transpositionTable, int depth, int alpha, int beta)
 {
     std::vector<Move> moves = generateLegalMoves(board);
 
@@ -48,7 +48,7 @@ int negamax(Board &board, int depth, int alpha, int beta)
     for (Move &move: moves)
     {
         board.makeMove(move);
-        int current = -negamax(board, depth - 1, -beta, -alpha);
+        int current = -negamax(board, transpositionTable, depth - 1, -beta, -alpha);
         best = std::max(best, current);
         alpha = std::max(alpha, best);
         board.undoMove();
