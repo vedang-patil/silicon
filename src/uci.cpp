@@ -7,8 +7,6 @@
 #include "utils.hpp"
 #include "search.hpp"
 
-#include "hashing.hpp"
-
 typedef unsigned long long U64;
 
 void UCI::loop()
@@ -58,8 +56,6 @@ void UCI::handleCommand(const std::string& command)
     else if (tokens[0] == "position")
     {
         position(tokens);
-
-        std::cout << computeZobristHash(board.currentState) << std::endl;
     }
     else if (tokens[0] == "display")
     {
@@ -108,36 +104,14 @@ void UCI::handleCommand(const std::string& command)
 void UCI::position(const std::vector<std::string>& tokens)
 {
     this->board = ((tokens[1] == "startpos") ? Board() : Board(tokens[2] + ' ' + tokens[3] + ' ' + tokens[4] + ' ' + tokens[5] + ' ' + tokens[6] + ' ' + tokens[7]));
-    for (size_t i = (tokens[1] == "startpos") ? 3: 8; i < tokens.size(); i++) board.makeMove(tokens[i]);
+    for (size_t i = (tokens[1] == "startpos") ? 3: 8; i < tokens.size(); i++) board.makeMove(Move(tokens[i]));
 }
 
 void UCI::go(const std::vector<std::string>& tokens)
 {
-    int depth = 3;
-    if (tokens[1] == "depth") depth = stoi(tokens[2]);
-
     std::vector<Move> moves = generateLegalMoves(board);
 
-    size_t bestMoveIdx = -1;
-    int bestMoveEval = -1e9;
-
-    TranspositionTable<int> transpositionTable(0);
-
-    for (size_t moveIdx = 0; moveIdx < moves.size(); moveIdx++)
-    {
-        board.makeMove(moves[moveIdx]);
-        int currentMoveEval = -negamax(board, transpositionTable, depth);
-
-        if (currentMoveEval > bestMoveEval)
-        {
-            bestMoveEval = currentMoveEval;
-            bestMoveIdx = moveIdx;
-        }
-
-        board.undoMove();
-    }
-
-    if (bestMoveIdx == -1) bestMoveIdx = 0;
+    size_t bestMoveIdx = 0;
     
     std::cout << "bestMove " << (char)('a' + moves[bestMoveIdx].from % 8) << (1 + moves[bestMoveIdx].from / 8);
     std::cout << (char)('a' + moves[bestMoveIdx].to % 8) << (1 + moves[bestMoveIdx].to / 8) << std::endl;

@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 typedef unsigned long long U64;
 
@@ -24,13 +25,6 @@ struct Move
 {
     int from, to, promotion;
 
-    Move()
-    {
-        this->from = 0;
-        this->to = 0;
-        this->promotion = 0;
-    }
-
     Move(int from, int to)
     {
         this->from = from;
@@ -43,5 +37,19 @@ struct Move
         this->from = from;
         this->to = to;
         this->promotion = promotion;
+    }
+
+    Move(const std::string& move)
+    {
+        this->from = (move[1] - '1') * 8 + (move[0] - 'a');
+        this->to = (move[3] - '1') * 8 + (move[2] - 'a');
+
+        if (move.size() == 5)
+        {
+            if (move[4] == 'n') this->promotion = 1;
+            else if (move[4] == 'b') this->promotion = 2;
+            else if (move[4] == 'r') this->promotion = 3;
+            else if (move[4] == 'q') this->promotion = 4;
+        }
     }
 };

@@ -29,8 +29,6 @@ public:
     
     U64 getOccupancyBitboard(bool colour) const;
 
-    void makeMove(const std::string& move);
-
     void makeMove(const Move& move);
     
     void undoMove();

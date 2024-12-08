@@ -5,11 +5,9 @@
 #include <iostream>
 #include "attacks.hpp"
 #include "uci.hpp"
-#include "hashing.hpp"
 
 int main()
 {
     precomputeAttacks();
-    precomputeZobristRandoms();
     UCI().loop();
 }

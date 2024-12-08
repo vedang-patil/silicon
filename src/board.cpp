@@ -130,11 +130,6 @@ U64 Board::getOccupancyBitboard(bool colour) const
     return result;
 }
 
-void Board::makeMove(const std::string& move)
-{
-    this->makeMove(Move((move[1] - '1') * 8 + (move[0] - 'a'), (move[3] - '1') * 8 + (move[2] - 'a')));
-}
-
 void Board::makeMove(const Move& move)
 {
     prevStates.push_back(currentState);

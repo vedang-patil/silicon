@@ -19,36 +19,31 @@ int staticAnalysis(const Board &board)
     return (board.currentState.colour ? -score : score);
 }
 
-int negamax(Board &board, TranspositionTable<int> &transpositionTable, int depth)
+Search::Search(const Board &board)
 {
-    return negamax(board, transpositionTable, depth, -1e9, 1e9);
+    this->board = board;
 }
 
-int negamax(Board &board, TranspositionTable<int> &transpositionTable, int depth, int alpha, int beta)
+int Search::negamax(int depth, int alpha, int beta)
 {
+    if (depth == 0) return staticAnalysis(board);
+
     std::vector<Move> moves = generateLegalMoves(board);
 
     if (moves.size() == 0)
     {
         if ((board.getOccupancyBitboard(~board.currentState.colour) & attacksTo(board, board.currentState.bitboards[board.currentState.colour * 6 + 5])) != 0)
-        {
-            return -1e9;
-        }
-
+            return -1e8;
         return 0;
-    }
-
-    if (depth == 0)
-    {
-        return staticAnalysis(board);
     }
 
     int best = -1e9;
 
     for (Move &move: moves)
     {
+        if (isCancelled) break;
         board.makeMove(move);
-        int current = -negamax(board, transpositionTable, depth - 1, -beta, -alpha);
+        int current = -negamax(depth - 1, -beta, -alpha);
         best = std::max(best, current);
         alpha = std::max(alpha, best);
         board.undoMove();
@@ -56,4 +51,9 @@ int negamax(Board &board, TranspositionTable<int> &transpositionTable, int depth
     }
 
     return best;
+}
+
+void Search::stopSearch()
+{
+    isCancelled = true;
 }

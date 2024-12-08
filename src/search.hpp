@@ -4,8 +4,18 @@
 #include "movegen.hpp"
 #include "movegen.hpp"
 #include "bits.hpp"
-#include "hashing.hpp"
 
-int negamax(Board &board, TranspositionTable<int> &transpositionTable, int depth);
+class Search
+{
+private:
+    Board board;
+    bool isCancelled = false;
 
-int negamax(Board &board, TranspositionTable<int> &transpositionTable, int depth, int alpha, int beta);
+public:
+    Search(const Board &board);
+
+    int negamax(int depth, int alpha, int beta);
+
+    void stopSearch();
+};
+
