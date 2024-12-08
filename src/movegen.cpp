@@ -110,11 +110,10 @@ std::vector<Move> generatePseudoLegalMoves(const Board& board)
 
 std::vector<Move> generateLegalMoves(const Board& board)
 {
-    std::vector<Move> pseudoLegalMoves = generatePseudoLegalMoves(board);
     std::vector<Move> moves;
     Board b = board;
 
-    for (Move& move: pseudoLegalMoves)
+    for (Move& move: generatePseudoLegalMoves(board))
     {
         b.makeMove(move);
         if ((attacksTo(b, lsbIdx(b.currentState.bitboards[(!b.currentState.colour) * 6 + 5])) & b.getOccupancyBitboard(b.currentState.colour)) == 0)

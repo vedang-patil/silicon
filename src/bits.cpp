@@ -15,15 +15,7 @@ U64 popLsb(U64& x)
 
 int popCount(U64 x)
 {
-    int result = 0;
-
-    while (x != 0)
-    {
-        popLsb(x);
-        result++;
-    }
-
-    return result;
+    return std::popcount(x);
 }
 
 int lsbIdx(U64 x)
