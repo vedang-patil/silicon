@@ -104,7 +104,7 @@ void UCI::handleCommand(const std::string& command)
 void UCI::position(const std::vector<std::string>& tokens)
 {
     this->board = ((tokens[1] == "startpos") ? Board() : Board(tokens[2] + ' ' + tokens[3] + ' ' + tokens[4] + ' ' + tokens[5] + ' ' + tokens[6] + ' ' + tokens[7]));
-    for (size_t i = (tokens[1] == "startpos") ? 3: 8; i < tokens.size(); i++) board.makeMove(Move(tokens[i]));
+    for (size_t i = (tokens[1] == "startpos") ? 3: 9; i < tokens.size(); i++) board.makeMove(Move(tokens[i]));
 }
 
 void UCI::go(const std::vector<std::string>& tokens)
@@ -114,5 +114,9 @@ void UCI::go(const std::vector<std::string>& tokens)
     size_t bestMoveIdx = 0;
     
     std::cout << "bestMove " << (char)('a' + moves[bestMoveIdx].from % 8) << (1 + moves[bestMoveIdx].from / 8);
+    std::cout << (char)('a' + moves[bestMoveIdx].to % 8) << (1 + moves[bestMoveIdx].to / 8) << std::endl;
+
+    std::cout << "info depth 1 seldepth 1 multipv 1 score cp 10 nodes 10 nps 5 time 5 pv ";
+    std::cout << (char)('a' + moves[bestMoveIdx].from % 8) << (1 + moves[bestMoveIdx].from / 8);
     std::cout << (char)('a' + moves[bestMoveIdx].to % 8) << (1 + moves[bestMoveIdx].to / 8) << std::endl;
 }
