@@ -1,3 +1,4 @@
+#include <sstream>
 #include <string>
 #include <iostream>
 #include <thread>
@@ -17,7 +18,9 @@ void UCI::loop()
     while (command != "quit")
     {
         getline(std::cin, command);
-        handleCommand(command);
+        std::stringstream ss(command);
+
+        handleCommand(ss);
     }
 }
 
@@ -39,39 +42,41 @@ int testMoveGeneration(Board &board, int depth)
     return numberofPositions;
 }
 
-void UCI::handleCommand(const std::string& command)
+void UCI::handleCommand(std::stringstream& ss)
 {
-    std::vector<std::string> tokens = split_str(command, ' ');
+    std::string command;
+    ss >> command;
 
-    if (tokens[0] == "uci")
+    if (command == "uci")
     {
         std::cout << "id name Silicon 2" << std::endl;
         std::cout << "id author Vedang Patil" << std::endl;
         std::cout << "uciok" << std::endl;
     }
-    else if (tokens[0] == "isready")
+    else if (command == "isready")
     {
         std::cout << "readyok" << std::endl;
     }
-    else if (tokens[0] == "position")
+    else if (command == "position")
     {
-        position(tokens);
+        position(ss);
     }
-    else if (tokens[0] == "display")
+    else if (command == "display")
     {
         std::cout << board.getAsFenString() << std::endl;
     }
-    else if (tokens[0] == "go")
+    else if (command == "go")
     {
-        std::thread t(&UCI::go, this, tokens);
-        t.detach();
+        go(ss);
     }
-    else if (tokens[0] == "stop")
+    else if (command == "stop")
     {
     }
-    else if (tokens[0] == "depthtest")
+    else if (command == "depthtest")
     {
-        for (int i = 0; i <= stoi(tokens[1]); i++)
+        std::string depth;
+        ss >> depth;
+        for (int i = 0; i <= stoi(depth); i++)
         {
             auto start = std::chrono::high_resolution_clock::now();
             int x = testMoveGeneration(board, i);
@@ -80,15 +85,17 @@ void UCI::handleCommand(const std::string& command)
             printf("Depth: %d, Positions: %d, Time: %lf\n", i, x, duration.count());
         }
     }
-    else if (tokens[0] == "perft")
+    else if (command == "perft")
     {
+        std::string depth;
+        ss >> depth;
         std::vector<Move> moves = generateLegalMoves(board);
         long long int total = 0;
 
         for (Move move: moves)
         {
             board.makeMove(move);
-            int x = testMoveGeneration(board, stoi(tokens[1]) - 1);
+            int x = testMoveGeneration(board, stoi(depth) - 1);
             total += x;
             std::cout << std::string(1, 'a' + (move.from % 8)) + std::to_string((move.from / 8) + 1);
             std::cout << std::string(1, 'a' + (move.to % 8)) + std::to_string((move.to / 8) + 1);
@@ -101,13 +108,37 @@ void UCI::handleCommand(const std::string& command)
     }
 }
 
-void UCI::position(const std::vector<std::string>& tokens)
+void UCI::position(std::stringstream& ss)
 {
-    this->board = ((tokens[1] == "startpos") ? Board() : Board(tokens[2] + ' ' + tokens[3] + ' ' + tokens[4] + ' ' + tokens[5] + ' ' + tokens[6] + ' ' + tokens[7]));
-    for (size_t i = (tokens[1] == "startpos") ? 3: 9; i < tokens.size(); i++) board.makeMove(Move(tokens[i]));
+    std::string posType;
+    ss >> posType;
+    
+    if (posType == "startpos")
+    {
+        this->board = Board();
+    }
+    else
+    {
+        std::string fen, fenPiece;
+
+        for (int i = 0; i < 6; i++)
+        {
+            ss >> fenPiece;
+            fen += fenPiece;
+        }
+
+        this->board = Board(fen);
+    }
+
+    if (ss.peek() != EOF)
+    {
+        std::string word;
+        ss >> word;
+        while (ss >> word) board.makeMove(word);
+    }
 }
 
-void UCI::go(const std::vector<std::string>& tokens)
+void UCI::go(std::stringstream& ss)
 {
     std::vector<Move> moves = generateLegalMoves(board);
 

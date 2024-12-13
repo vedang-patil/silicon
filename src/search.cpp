@@ -4,17 +4,17 @@ int staticAnalysis(const Board &board)
 {
     int score = 0;
 
-    score += popCount(board.currentState.bitboards[0]);
-    score += popCount(board.currentState.bitboards[1]) * 3;
-    score += popCount(board.currentState.bitboards[2]) * 3;
-    score += popCount(board.currentState.bitboards[3]) * 5;
-    score += popCount(board.currentState.bitboards[4]) * 9;
+    score += popCount(board.currentState.bitboards[0]) * 100;
+    score += popCount(board.currentState.bitboards[1]) * 300;
+    score += popCount(board.currentState.bitboards[2]) * 300;
+    score += popCount(board.currentState.bitboards[3]) * 500;
+    score += popCount(board.currentState.bitboards[4]) * 900;
 
-    score -= popCount(board.currentState.bitboards[6]);
-    score -= popCount(board.currentState.bitboards[7]) * 3;
-    score -= popCount(board.currentState.bitboards[8]) * 3;
-    score -= popCount(board.currentState.bitboards[9]) * 5;
-    score -= popCount(board.currentState.bitboards[10]) * 9;
+    score -= popCount(board.currentState.bitboards[6]) * 100;
+    score -= popCount(board.currentState.bitboards[7]) * 300;
+    score -= popCount(board.currentState.bitboards[8]) * 300;
+    score -= popCount(board.currentState.bitboards[9]) * 500;
+    score -= popCount(board.currentState.bitboards[10]) * 900;
 
     return (board.currentState.colour ? -score : score);
 }
@@ -33,7 +33,7 @@ int Search::negamax(int depth, int alpha, int beta)
     if (moves.size() == 0)
     {
         if ((board.getOccupancyBitboard(~board.currentState.colour) & attacksTo(board, board.currentState.bitboards[board.currentState.colour * 6 + 5])) != 0)
-            return -1e8;
+            return -1e9;
         return 0;
     }
 

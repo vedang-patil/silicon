@@ -14,9 +14,9 @@ private:
 public:
     void loop();
     
-    void handleCommand(const std::string& command);
+    void handleCommand(std::stringstream& ss);
     
-    void position(const std::vector<std::string>& tokens);
+    void position(std::stringstream& tokens);
 
-    void go(const std::vector<std::string>& tokens);
+    void go(std::stringstream& tokens);
 };

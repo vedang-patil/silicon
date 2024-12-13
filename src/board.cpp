@@ -1,4 +1,5 @@
 #include <sstream>
+#include <string>
 #include <iostream>
 #include <bitset>
 #include "types.hpp"
@@ -9,25 +10,41 @@
 typedef unsigned long long U64;
 
 Board::Board()
-    :Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-{}
+    :Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {}
 
 Board::Board(const std::string &fenString)
 {
-    std::vector<std::string> pieces = split_str(fenString, ' ');
+    this->loadPosition(fenString);
+}
 
-    currentState.colour = (pieces[1] == "b");
+Board::Board(std::stringstream &fenSS)
+{
+    this->loadPosition(fenSS);
+}
+
+void Board::loadPosition(const std::string &fenString)
+{
+    std::stringstream fenSS(fenString);
+    this->loadPosition(fenSS);
+}
+
+void Board::loadPosition(std::stringstream &fenSS)
+{
+    std::string position, colour, castlingRights, enPassantSquare, halfMoveClock, fullMoveCounter;
+    fenSS >> position >> colour >> castlingRights >> enPassantSquare >> halfMoveClock >> fullMoveCounter;
+
+    currentState.colour = (colour == "b");
     currentState.castlingRights = 0;
-    currentState.castlingRights |= (pieces[2].find('K') == std::string::npos ? 0 : 1);
-    currentState.castlingRights |= (pieces[2].find('Q') == std::string::npos ? 0 : 2);
-    currentState.castlingRights |= (pieces[2].find('k') == std::string::npos ? 0 : 4);
-    currentState.castlingRights |= (pieces[2].find('q') == std::string::npos ? 0 : 8);
-    currentState.enPassantSquare = (pieces[3] == "-" ? -1 : (pieces[3][1] - '1') * 8 + (pieces[3][0] - 'a'));
-    currentState.halfmoveClock = stoi(pieces[4]);
-    currentState.fullmoveCounter = stoi(pieces[5]);
+    currentState.castlingRights |= (castlingRights.find('K') == std::string::npos ? 0 : 1);
+    currentState.castlingRights |= (castlingRights.find('Q') == std::string::npos ? 0 : 2);
+    currentState.castlingRights |= (castlingRights.find('k') == std::string::npos ? 0 : 4);
+    currentState.castlingRights |= (castlingRights.find('q') == std::string::npos ? 0 : 8);
+    currentState.enPassantSquare = (enPassantSquare == "-" ? -1 : (enPassantSquare[1] - '1') * 8 + (enPassantSquare[0] - 'a'));
+    currentState.halfmoveClock = stoi(halfMoveClock);
+    currentState.fullmoveCounter = stoi(fullMoveCounter);
 
     int rank = 7, file = 0;
-    for (const char& c: pieces[0])
+    for (const char& c: position)
     {
         if (c == '/') continue;
 

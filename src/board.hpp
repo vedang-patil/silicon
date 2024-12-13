@@ -22,6 +22,10 @@ public:
 
     Board();
     Board(const std::string &fenString);
+    Board(std::stringstream &fenSS);
+
+    void loadPosition(const std::string& fenSS);
+    void loadPosition(std::stringstream& fenSS);
 
     std::string getAsFenString() const;
 
