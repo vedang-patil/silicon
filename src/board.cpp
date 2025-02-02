@@ -4,7 +4,6 @@
 #include <bitset>
 #include "types.hpp"
 #include "board.hpp"
-#include "bits.hpp"
 #include "utils.hpp"
 
 typedef unsigned long long U64;

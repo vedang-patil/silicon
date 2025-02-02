@@ -9,5 +9,13 @@
 int main()
 {
     precomputeAttacks();
-    UCI().loop();
+    UCI uci;
+
+    std::cout << "Silicon 2 by Vedang Patil" << std::endl;
+    std::string line;
+    
+    do {
+        getline(std::cin, line);
+        uci.handleCommand(line);
+    } while (line != "quit");
 }

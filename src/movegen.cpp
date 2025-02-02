@@ -5,7 +5,6 @@
 #include "utils.hpp"
 #include "movegen.hpp"
 #include "board.hpp"
-#include "bits.hpp"
 #include "attacks.hpp"
 
 U64 attacksTo(const Board& board, int square)

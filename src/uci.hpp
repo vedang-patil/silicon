@@ -3,20 +3,17 @@
 #include <string>
 #include "types.hpp"
 #include "board.hpp"
+#include "search.hpp"
 
 typedef unsigned long long U64;
 
 class UCI
 {
 private:
+    Search* search = nullptr;
     Board board;
 
-public:
-    void loop();
-    
-    void handleCommand(std::stringstream& ss);
-    
     void position(std::stringstream& tokens);
-
-    void go(std::stringstream& tokens);
+public:
+    void handleCommand(const std::string& command);
 };

@@ -1,22 +1,25 @@
 #include "utils.hpp"
 
-std::vector<std::string> split_str(const std::string &s, const char delimiter)
+U64 lsb(U64 x)
 {
-    size_t start = 0;
-    size_t end = s.find_first_of(delimiter);
+    return x & (0-x);
+}
 
-    std::vector<std::string> result;
+U64 popLsb(U64& x)
+{
+    U64 y = lsb(x);
+    x &= (~y);
+    return y;
+}
 
-    while (end <= std::string::npos)
-    {
-        result.emplace_back(s.substr(start, end - start));
-        if (end == std::string::npos) break;
+int popCount(U64 x)
+{
+    return std::popcount(x);
+}
 
-        start = end + 1;
-        end = s.find_first_of(delimiter, start);
-    }
-
-    return result;
+int lsbIdx(U64 x)
+{
+   return std::countr_zero(x);
 }
 
 U64 northFill(U64 square)

@@ -41,7 +41,7 @@ int Search::negamax(int depth, int alpha, int beta)
 
     for (Move &move: moves)
     {
-        if (isCancelled) break;
+        if (shouldSearchStop.load()) break;
         board.makeMove(move);
         int current = -negamax(depth - 1, -beta, -alpha);
         best = std::max(best, current);
@@ -53,7 +53,27 @@ int Search::negamax(int depth, int alpha, int beta)
     return best;
 }
 
+void Search::search()
+{
+    bestEval = negamax(5, -1e9, 1e9);
+}
+
+void Search::startSearch()
+{
+    shouldSearchStop.store(false);
+    isSearching = true;
+    this->searchThread = new std::thread(search);
+}
+
 void Search::stopSearch()
 {
-    isCancelled = true;
+    shouldSearchStop.store(true);
+    isSearching = false;
+    this->searchThread->join();
+    delete this->searchThread;
+}
+
+int Search::getResult()
+{
+    return this->bestEval;
 }

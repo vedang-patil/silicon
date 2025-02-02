@@ -6,4 +6,4 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 project(silicon)
 
-add_executable(silicon src/main.cpp src/attacks.cpp src/bits.cpp src/board.cpp src/movegen.cpp src/search.cpp src/uci.cpp src/utils.cpp)
+add_executable(silicon src/main.cpp src/attacks.cpp src/board.cpp src/movegen.cpp src/search.cpp src/uci.cpp src/utils.cpp)
