@@ -1,6 +1,5 @@
 #include <sstream>
 #include <string>
-#include <iostream>
 #include <thread>
 #include <iostream>
 #include "uci.hpp"
@@ -10,21 +9,30 @@
 
 typedef unsigned long long U64;
 
+UCI::UCI(std::function <void(const std::string&)> outputCallback) {
+    this->outputCallback = outputCallback;
+    this->search = new Search(this->board);
+}
+
 void UCI::handleCommand(const std::string& command) {
     std::string commandType = command.substr(0, command.find(' '));
+    std::stringstream ss(command);
 
     if (commandType == "uci") {
-        std::cout << "id name Silicon 2\nid author Vedang Patil\nuciok" << std::endl;
+        outputCallback("id name Silicon 2");
+        outputCallback("id author Vedang Patil");
+        outputCallback("uciok");
     }
     else if (commandType == "isready") {
-        std::cout << "readyok" << std::endl;
+        outputCallback("readyok");
     }
     else if (commandType == "position") {
-        std::stringstream ss(command);
         position(ss);
     }
     else if (commandType == "go") {
-        this->search->startSearch();
+        this->search->startSearch([this](const Move& bestMove) {
+            outputCallback("bestMove " + bestMove.toString());
+        });
     }
     else if (commandType == "stop") {
         this->search->stopSearch();
@@ -57,4 +65,6 @@ void UCI::position(std::stringstream& ss) {
         ss >> word;
         while (ss >> word) board.makeMove(word);
     }
+
+    this->search = new Search(this->board);
 }

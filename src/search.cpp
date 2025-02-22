@@ -22,6 +22,44 @@ int staticAnalysis(const Board &board)
 Search::Search(const Board &board)
 {
     this->board = board;
+    this->isSearching.store(false);
+}
+
+void Search::startSearch(std::function<void(const Move&)> callback)
+{
+    isSearching.store(true);
+    this->searchThread = std::thread(&Search::search, this, callback);
+}
+
+void Search::stopSearch()
+{
+    isSearching.store(false);
+}
+
+void Search::search(std::function<void(const Move&)> callback)
+{
+    std::vector<Move> moves = generateLegalMoves(board);
+    if (moves.size() == 0)
+    {
+        callback(Move(-1, -1, -1));
+        return;
+    }
+
+    int bestEval = -1e9;
+    Move bestMove(-1, -1, -1);
+
+    for (Move &move: moves)
+    {
+        if (!isSearching.load()) break;
+        int current = negamax(5, -1e9, 1e9);
+        if (current > bestEval)
+        {
+            bestEval = current;
+            bestMove = move;
+        }
+    }
+
+    callback(bestMove);
 }
 
 int Search::negamax(int depth, int alpha, int beta)
@@ -41,39 +79,16 @@ int Search::negamax(int depth, int alpha, int beta)
 
     for (Move &move: moves)
     {
-        if (shouldSearchStop.load()) break;
+        if (!isSearching.load()) break;
+
         board.makeMove(move);
         int current = -negamax(depth - 1, -beta, -alpha);
+        board.undoMove();
+
         best = std::max(best, current);
         alpha = std::max(alpha, best);
-        board.undoMove();
         if (beta <= alpha) break;
     }
 
     return best;
-}
-
-void Search::search()
-{
-    bestEval = negamax(5, -1e9, 1e9);
-}
-
-void Search::startSearch()
-{
-    shouldSearchStop.store(false);
-    isSearching = true;
-    this->searchThread = new std::thread(search);
-}
-
-void Search::stopSearch()
-{
-    shouldSearchStop.store(true);
-    isSearching = false;
-    this->searchThread->join();
-    delete this->searchThread;
-}
-
-int Search::getResult()
-{
-    return this->bestEval;
 }

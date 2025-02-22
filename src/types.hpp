@@ -52,4 +52,19 @@ struct Move
             else if (move[4] == 'q') this->promotion = 4;
         }
     }
+
+    std::string toString() const
+    {
+        std::string result = "";
+        result += ('a' + (this->from % 8));
+        result += std::to_string(this->from / 8 + 1);
+        result += ('a' + (this->to % 8));
+        result += std::to_string(this->to / 8 + 1);
+
+        if (this->promotion == 1) result = result + "n";
+        else if (this->promotion == 2) result = result + "b";
+        else if (this->promotion == 3) result = result + "r";
+        else if (this->promotion == 4) result = result + "q";
+        return result;
+    }
 };

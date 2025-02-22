@@ -1,4 +1,5 @@
 #pragma once
+#include <bit>
 #include "types.hpp"
 
 typedef unsigned long long U64;

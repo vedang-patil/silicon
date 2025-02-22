@@ -9,7 +9,7 @@
 int main()
 {
     precomputeAttacks();
-    UCI uci;
+    UCI uci([](const std::string& output) { std::cout << output << std::endl; });
 
     std::cout << "Silicon 2 by Vedang Patil" << std::endl;
     std::string line;
