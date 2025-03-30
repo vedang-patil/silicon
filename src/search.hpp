@@ -15,12 +15,12 @@ private:
     std::atomic<bool> isSearching;
     std::thread searchThread;
 
-    void search(std::function<void(const Move&)> callback, int depth);
+    void search(int depth, std::function<void(const Move&)> callback);
     int negamax(int depth, int alpha, int beta);
 public:
     Search(const Board &board);
 
-    void startSearch(std::function<void(const Move&)> callback);
+    void startSearch(int depth, std::function<void(const Move&)> callback);
 
     void stopSearch();
 };

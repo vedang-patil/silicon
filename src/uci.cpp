@@ -28,7 +28,7 @@ void UCI::handleCommand(const std::string& command) {
         position(ss);
     }
     else if (commandType == "go") {
-        this->search->startSearch([this](const Move& bestMove) {
+        this->search->startSearch(5, [this](const Move& bestMove) {
             outputCallback("bestMove " + bestMove.toString());
         });
     }

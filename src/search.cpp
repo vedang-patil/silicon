@@ -26,10 +26,10 @@ Search::Search(const Board &board)
     this->isSearching.store(false);
 }
 
-void Search::startSearch(std::function<void(const Move&)> callback)
+void Search::startSearch(int depth, std::function<void(const Move&)> callback)
 {
     isSearching.store(true);
-    this->searchThread = std::thread(&Search::search, this, callback);
+    this->searchThread = std::thread(&Search::search, this, depth, callback);
     this->searchThread.detach();;
 }
 
@@ -38,7 +38,7 @@ void Search::stopSearch()
     isSearching.store(false);
 }
 
-void Search::search(std::function<void(const Move&)> callback, int depth)
+void Search::search(int depth, std::function<void(const Move&)> callback)
 {
     std::vector<Move> moves = generateLegalMoves(board);
     if (moves.size() == 0)
