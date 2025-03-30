@@ -15,11 +15,8 @@ private:
     std::atomic<bool> isSearching;
     std::thread searchThread;
 
-    void search(std::function<void(const Move&)> callback);
+    void search(std::function<void(const Move&)> callback, int depth);
     int negamax(int depth, int alpha, int beta);
-
-    Move bestMove = Move(-1, -1);
-    int bestEval;
 public:
     Search(const Board &board);
 

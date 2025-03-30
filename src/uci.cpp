@@ -1,7 +1,5 @@
 #include <sstream>
 #include <string>
-#include <thread>
-#include <iostream>
 #include "uci.hpp"
 #include "movegen.hpp"
 #include "utils.hpp"
@@ -19,7 +17,7 @@ void UCI::handleCommand(const std::string& command) {
     std::stringstream ss(command);
 
     if (commandType == "uci") {
-        outputCallback("id name Silicon 2");
+        outputCallback("id name Silicon");
         outputCallback("id author Vedang Patil");
         outputCallback("uciok");
     }
@@ -38,7 +36,7 @@ void UCI::handleCommand(const std::string& command) {
         this->search->stopSearch();
     }
     else if (commandType == "display") {
-        std::cout << board.getAsFenString() << std::endl;
+        outputCallback(board.getAsFenString());
     }
 }
 

@@ -1,7 +1,6 @@
 #pragma once
-#include <vector>
 #include <string>
-#include <functional>
+#include <sstream>
 #include "types.hpp"
 #include "board.hpp"
 #include "search.hpp"

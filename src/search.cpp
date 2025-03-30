@@ -1,4 +1,5 @@
 #include "search.hpp"
+#include "iostream"
 
 int staticAnalysis(const Board &board)
 {
@@ -29,6 +30,7 @@ void Search::startSearch(std::function<void(const Move&)> callback)
 {
     isSearching.store(true);
     this->searchThread = std::thread(&Search::search, this, callback);
+    this->searchThread.detach();;
 }
 
 void Search::stopSearch()
@@ -36,7 +38,7 @@ void Search::stopSearch()
     isSearching.store(false);
 }
 
-void Search::search(std::function<void(const Move&)> callback)
+void Search::search(std::function<void(const Move&)> callback, int depth)
 {
     std::vector<Move> moves = generateLegalMoves(board);
     if (moves.size() == 0)
@@ -51,7 +53,7 @@ void Search::search(std::function<void(const Move&)> callback)
     for (Move &move: moves)
     {
         if (!isSearching.load()) break;
-        int current = negamax(5, -1e9, 1e9);
+        int current = negamax(depth - 1, -1e9, 1e9);
         if (current > bestEval)
         {
             bestEval = current;
